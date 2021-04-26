@@ -1,9 +1,10 @@
-title: "【Python】loggingまとめ"
-summary: ""
+title: "Python logging"
+summary: "loggingに関してまとめます。"
 topics: ["Python", "logging"]
 published: false
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
-chapters:
-  - example1
-  - example2
+#chapters:
+#  - chap01
+#  - chap02
+#  - references
