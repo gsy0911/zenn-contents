@@ -4,6 +4,10 @@
 
 # zenn-contents
 
+| タイトル | slug | Zenn link |
+|:---|:---|:---|
+| sam-cli-beta-cdkを試してみた | [3cf7f648a3de57e25212](./articles/3cf7f648a3de57e25212.md) |  |
+
 ```shell
 # run local
 $ npx zenn preview
