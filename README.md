@@ -4,13 +4,14 @@
 
 # zenn-contents
 
-| タイトル                                              | slug                                                         | Zenn link                                                       |
-|:--------------------------------------------------|:-------------------------------------------------------------|:----------------------------------------------------------------|
-| sam-cli-beta-cdkを試してみた                            | [3cf7f648a3de57e25212](./articles/3cf7f648a3de57e25212.md)   | [LINK](https://zenn.dev/gsy0911/articles/3cf7f648a3de57e25212)  |
-| cognitoを利用してstreamlitへのアクセス範囲を限定する                | [da47b660b7dd2b7d1ae7](./articles/da47b660b7dd2b7d1ae7.md)   | [LINK](https://zenn.dev/gsy0911/articles/da47b660b7dd2b7d1ae7)  |
-| S3にあるファイルをzipに圧縮してそのままアップロードするPythonスクリプト         | [8e049a55f7f0e8018db7](./articles/8e049a55f7f0e8018db7.md)   | [LINK](https://zenn.dev/gsy0911/articles/8e049a55f7f0e8018db7)  |
-| AwsCustomResourceを使ってAWS CDKでのデプロイ時に別リージョンの値を参照する | [820313c08a545922733f](./articles/820313c08a545922733f.md)   | [LINK](https://zenn.dev/gsy0911/articles/820313c08a545922733f)  |
-| Lambda@Edgeを利用してCloudFrontにcognito認証をかける          | [1cd558034afc67b52a46](./articles/1cd558034afc67b52a46.md)   | [LINK](https://zenn.dev/gsy0911/articles/1cd558034afc67b52a46)  |
+| タイトル                                              | slug                                                       | Zenn link                                                      |
+|:--------------------------------------------------|:-----------------------------------------------------------|:---------------------------------------------------------------|
+| sam-cli-beta-cdkを試してみた                            | [3cf7f648a3de57e25212](./articles/3cf7f648a3de57e25212.md) | [LINK](https://zenn.dev/gsy0911/articles/3cf7f648a3de57e25212) |
+| cognitoを利用してstreamlitへのアクセス範囲を限定する                | [da47b660b7dd2b7d1ae7](./articles/da47b660b7dd2b7d1ae7.md) | [LINK](https://zenn.dev/gsy0911/articles/da47b660b7dd2b7d1ae7) |
+| S3にあるファイルをzipに圧縮してそのままアップロードするPythonスクリプト         | [8e049a55f7f0e8018db7](./articles/8e049a55f7f0e8018db7.md) | [LINK](https://zenn.dev/gsy0911/articles/8e049a55f7f0e8018db7) |
+| AwsCustomResourceを使ってAWS CDKでのデプロイ時に別リージョンの値を参照する | [820313c08a545922733f](./articles/820313c08a545922733f.md) | [LINK](https://zenn.dev/gsy0911/articles/820313c08a545922733f) |
+| Lambda@Edgeを利用してCloudFrontにcognito認証をかける          | [1cd558034afc67b52a46](./articles/1cd558034afc67b52a46.md) | [LINK](https://zenn.dev/gsy0911/articles/1cd558034afc67b52a46) |
+| SSMでアクセス可能なEC2をCDKで作成する                           | [5bb915ef331d1f](./articles/5bb915ef331d1f.md)             | [LINK](https://zenn.dev/gsy0911/articles/5bb915ef331d1f)       |
 
 ```shell
 # run local
