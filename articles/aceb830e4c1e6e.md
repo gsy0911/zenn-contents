@@ -8,10 +8,23 @@ published: false
 
 # はじめに
 
-HostedUIとかはいいけど、やっぱり自分で作りたい。
-AmplifyUIもあるけれど、使う必要はない。
+Cognitoの認証を利用するときに、HostedUIとかはいいけど、やっぱり自分で作りたいと思う時があります。
+HostedUIはサービスのイメージに合わなかったりするためです。
+また、AmplifyUIもありますが、これも利用しなくても画面は実装していきます。
+
+そこで、今回はUIフレームワークの1つであるMUIを使ってサインイン画面やパスワード変更画面などを実装していきます。
+画面は`MUI`をベースに作られていますが、認証まわりの処理は単一のファイルとして切り出されているため、`React`や`Next.js`を利用する場合なら、
+ほぼほぼコピペで利用できるかと思います。
+
+主に参考にしたのは以下の記事になっています。
 
 https://mseeeen.msen.jp/react-auth-with-ready-made-cognito/
+
+この記事の中でも述べられていますが、`aws-amplify`の中の`Auth`モジュールを利用して
+認証まわりの処理を組んでいきます。
+このモジュールは`Amplify`とは何も関係がなく単純に認証モジュールとして便利なため利用します。
+
+
 
 ログインの見た目はMUIを使っているので、以下のページのを参考にした。
 
@@ -19,34 +32,46 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 
 # 利用時のイメージ・この記事の対象読者
 
-
+利用時のイメージは次のようになっています。
+最初の画面はサービスのトップページを想定しています。
 
 ![](https://storage.googleapis.com/zenn-user-upload/c0110fa4ebec-20230225.png =600x)
 *サインイン前の状態*
 
+画面右上のアカウントボタンを押下すると、サインイン画面に遷移します。
+ユーザーの情報を入力して認証が成功すると、トップページに遷移します。
+
 ![](https://storage.googleapis.com/zenn-user-upload/2fd3e250ffbb-20230225.png =600x)
 *サインイン画面*
 
+認証済みの場合は、認証後の画面を用意する想定です。
+（今回は認証済みの場合「サインイン後」という文字になるようにしてあります。）
 
 ![](https://storage.googleapis.com/zenn-user-upload/51b333dfab41-20230225.png =600x)
 *サインイン後の状態*
+
+## この記事の対象読者
+
+- `React`か`Next.js`を利用する方
+- `cognito`の認証を利用する方
+- `Amplify`を利用せずに、`CloudFront`やその他の方法で独自にサイトをホスティングする方
 
 
 ## デプロイ環境
 
 利用したフロントエンドの主なライブラリ
 
-- Next.js
-- MUI
-- react-hook-form
-- aws-amplify
+- react: 18.2.0
+- Next.js: 13.2.1
+- MUI: 5.10.12
+- react-hook-form: 7.43.2
+- aws-amplify: 5.0.15
 
 # コード
 
-今回のコードは[このリポジトリ](https://github.com/gsy0911/zenn-cognito-frontend-auth)に載せてあります。
-適宜参考にしてください。
+今回のコードは[このリポジトリ](https://github.com/gsy0911/zenn-cognito-frontend-auth)に載せてありますので適宜参考にしてください。
 
-簡単に内容を紹介していきます。
+以下から簡単に内容を紹介していきます。
 
 ## ディレクトリ構成
 
@@ -410,6 +435,13 @@ const useProvideAuth = (): UseAuth => {
 
 ```
 ::::
+
+変更点は、以下の通りです。
+
+- `signInComplete`, `changePassword`, `forgetPassword`, `resetPassword`の関数の追加。
+  - これによって、必要な処理を実装できます。
+- `currentAuthenticatedUser`の追加。
+  - userを取得することができます。
 
 ## 各種認証画面の作成
 
