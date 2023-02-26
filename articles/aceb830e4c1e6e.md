@@ -453,9 +453,10 @@ const useProvideAuth = (): UseAuth => {
 ![](https://storage.googleapis.com/zenn-user-upload/a63c2667ad40-20230225.png =600x)
 *`AuthBasePage.tsx`のみで表示される内容*
 
-::::details コード詳細
 
-以下のコードは、ほとんどこの[参考記事](https://qiita.com/shunnami/items/98a341d2ac20775241ad)の内容がベースになっています。
+上の画面は以下のコードで実装されています。
+（ほとんどこの[参考記事](https://qiita.com/shunnami/items/98a341d2ac20775241ad)の内容がベースになっています。）
+
 
 ```typescript jsx: AuthBasePage.tsx
 import React, {createContext, useContext, useState} from 'react';
@@ -523,16 +524,146 @@ export const AuthBasePage: React.FC<{ title: string, children: React.ReactNode }
     </>
   )
 }
-
 ```
 
-::::
+認証まわりの画面に共通感を持たせるために、ガワだけのコンポーネントとして作成しています。
+そして、その中に`children`として各種フォームコンポーネントを組み込める形にしています。
+
+`useContext`は子コンポーネントで生じたフォームエラーのメッセージを、
+このコンポーネントに伝播させるために利用しています。
+どのように画面に表示させるか次第ですが、
+`react-hook-form`のエラー機能を利用したら、不要かもしれないです。
+本サンプルでは、画面下に表示されるようになっています。
+
+![](https://storage.googleapis.com/zenn-user-upload/e9353726a969-20230226.png =600x)
+*エラーメッセージの表示例*
+
+### サインイン画面の作成
+
+一例といてサインイン画面の構成について見ていきます。
+利用するのは、`SignIn.form.tsx`です。
+このtsxファイルでは、フォームのみを管理しています。
+
+![](https://storage.googleapis.com/zenn-user-upload/2fd3e250ffbb-20230225.png =600x)
+*サインイン画面*
+
+
+```typescript jsx: SignIn.form.tsx
+import React, {useState} from 'react';
+import {useAuth} from '@/lib/cognito-auth';
+import {useRouter} from 'next/router';
+import {
+  Box,
+  Button,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
+import {useForm, Controller} from "react-hook-form";
+import {useAuthPage} from './AuthBasePage';
+
+export const SignInForm: React.FC<{setSignInCompleteRequired: (state: boolean) => void}> = ({setSignInCompleteRequired}) => {
+  const auth = useAuth();
+  const authPage = useAuthPage()
+  const router = useRouter();
+  const [buttonDisabled, setButtonDisabled] = useState(false)
+  const {control, handleSubmit, getValues} = useForm({
+    defaultValues: {
+      username: "",
+      password: ""
+    }
+  });
+
+  const executeSignIn = async () => {
+    const username = getValues("username")
+    const password = getValues("password")
+    const result = await auth.signIn(username, password);
+    if (result.hasChallenge) {
+      if (result.challengeName === "NEW_PASSWORD_REQUIRED") {
+        setSignInCompleteRequired(true)
+      }
+    } else if (result.success) {
+      await router.push({
+        pathname: '/'
+      });
+    } else {
+      setButtonDisabled(false)
+      authPage.setIsError(true)
+      authPage.setErrorMessage(result.message)
+    }
+  };
+
+  const onSubmit = async () => {
+    setButtonDisabled(true)
+    authPage.setIsError(false)
+    await executeSignIn();
+  };
+  return (
+    <>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          name="username"
+          control={control}
+          render={({field}) => <TextField
+            {...field}
+            label="Username"
+            variant="standard"
+            fullWidth
+            required
+          />}
+        />
+        <Controller
+          name="password"
+          control={control}
+          render={({field}) => <TextField
+            {...field}
+            type="password"
+            label="Password"
+            variant="standard"
+            fullWidth
+            required
+          />}
+        />
+        <Box mt={3}>
+          <Button
+            type="submit"
+            color="primary"
+            variant="contained"
+            fullWidth
+            disabled={buttonDisabled}
+          >
+            サインイン
+          </Button>
+        </Box>
+      </form>
+      <Box mt={3}>
+        <Typography variant="caption">
+          <Link href="/password-forget">パスワードを忘れましたか？</Link>
+        </Typography>
+      </Box>
+    </>
+  )
+}
+```
+
+
+### その他の画面について
+
+構成としては、サインイン画面と同じなので詳細は省きます。
+詳しくはリポジトリの方を参照するようにお願いいたします。
+以下に作成できる画面を乗せておきます。
+
+`AuthBasePage.tsx`と`PasswordForget.form.tsx`を組み合わせた画面。
 
 ![](https://storage.googleapis.com/zenn-user-upload/99f9a9e63896-20230225.png =600x)
 *パスワード忘れ画面*
 
+`AuthBasePage.tsx`と`PasswordReset.form.tsx`を組み合わせた画面。
+
 ![](https://storage.googleapis.com/zenn-user-upload/ffb6b2886b5d-20230225.png =600x)
 *パスワード再設定画面*
+
+`AuthBasePage.tsx`と`PasswordChange.form.tsx`を組み合わせた画面。
 
 ![](https://storage.googleapis.com/zenn-user-upload/6d972248aa69-20230225.png =600x)
 *パスワード変更画面*
