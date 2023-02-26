@@ -26,7 +26,7 @@ https://mseeeen.msen.jp/react-auth-with-ready-made-cognito/
 
 
 
-ログインの見た目はMUIを使っているので、以下のページのを参考にした。
+ログインの見た目はMUIを使っているので、以下のページのを参考にしました。
 
 https://qiita.com/shunnami/items/98a341d2ac20775241ad
 
@@ -50,16 +50,27 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 ![](https://storage.googleapis.com/zenn-user-upload/51b333dfab41-20230225.png =600x)
 *サインイン後の状態*
 
+サイン画面の他に、本記事では以下の画面を作成しています。
+
+- 初回サインイン完了画面
+- パスワード変更画面
+- パスワード忘れ画面
+- パスワードリセット画面
+
 ## この記事の対象読者
 
 - `React`か`Next.js`を利用する方
 - `cognito`の認証を利用する方
 - `Amplify`を利用せずに、`CloudFront`やその他の方法で独自にサイトをホスティングする方
 
+今回はサインアップ画面はなく、AWSコンソールのcognitoの画面でユーザーを作成した後に、
+この認証画面を利用してもらう想定になっています。
+そのため、どちらかというとプライベートなサービスの場合を想定しています。
+（サインアップ画面を作れば誰でも登録・利用開始できるサービスにも利用と思います。）
 
 ## デプロイ環境
 
-利用したフロントエンドの主なライブラリ
+利用したフロントエンドの主なライブラリは以下の通りです。
 
 - react: 18.2.0
 - Next.js: 13.2.1
@@ -70,29 +81,31 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 # コード
 
 今回のコードは[このリポジトリ](https://github.com/gsy0911/zenn-cognito-frontend-auth)に載せてありますので適宜参考にしてください。
-
-以下から簡単に内容を紹介していきます。
+これから簡単に内容を紹介していきます。
 
 ## ディレクトリ構成
+
+ディレクトリ構成は以下のようになっています。
+👈がついている部分が主に追加・修正したファイルになっています。
 
 ```text
 frontend/
 ├── components
 │  ├── model
 │  │  └── Header
-│  │     ├── Header.tsx 👈 見た目を少しよくするために用意したヘッダー
+│  │     ├── Header.tsx 👈 見た目を少しよくするために用意したヘッダー（特に関係はないです）
 │  │     └── index.ts
 │  └── page
 │     ├── Auth
-│     │  ├── AuthBasePage.tsx 👈 a
-│     │  ├── PasswordChange.form.tsx 👈 a
-│     │  ├── PasswordForget.form.tsx 👈 a
-│     │  ├── PasswordReset.form.tsx 👈 a
-│     │  ├── SignIn.form.tsx 👈 a
-│     │  └── SignInComplete.form.tsx 👈 a
+│     │  ├── AuthBasePage.tsx 👈 認証まわりの画面のガワ
+│     │  ├── PasswordChange.form.tsx 👈 「パスワード変更」のフォーム
+│     │  ├── PasswordForget.form.tsx 👈 「パスワード忘れ」のフォーム
+│     │  ├── PasswordReset.form.tsx 👈 「パスワード再設定」のフォーム
+│     │  ├── SignIn.form.tsx 👈 「サインイン」のフォーム
+│     │  └── SignInComplete.form.tsx 👈 「初回サインイン完了」のフォーム
 │     └── index.ts
 ├── lib
-│  └── cognito-auth.tsx 👈 a
+│  └── cognito-auth.tsx 👈 認証まわりの処理をまとめたファイル
 ├── next.config.js
 ├── package-lock.json
 ├── package.json
@@ -103,9 +116,9 @@ frontend/
 │  ├── password-change
 │  │  └── index.tsx 👈 「パスワード変更」を表示
 │  ├── password-forget
-│  │  └── index.tsx 👈 「パスワード忘れ画面」と「パスワード再設定」を表示
+│  │  └── index.tsx 👈 「パスワード忘れ」と「パスワード再設定」を表示
 │  └── signin
-│     └── index.tsx 👈 「サインイン画面」と「初回サインイン完了画面」を表示
+│     └── index.tsx 👈 「サインイン」と「初回サインイン完了」を表示
 └── tsconfig.json
 ```
 
@@ -115,8 +128,8 @@ frontend/
 
 ## 認証用フックの準備
 
-今回の大事なコードの1つである`cognito-auth.tsx`を記述します。
-認証の各種関数や状態を管理するようになっています。
+今回の大事なコードの1つである`cognito-auth.tsx`について説明します。
+このファイルでは認証の各種関数や状態を管理するようになっています。
 このファイルは、[参考記事](https://mseeeen.msen.jp/react-auth-with-ready-made-cognito/)内容にいくつかの関数を追加しています。
 
 ファイルは長いので、見たい場合はアコーディオンを開いてください。
@@ -654,16 +667,19 @@ export const SignInForm: React.FC<{setSignInCompleteRequired: (state: boolean) =
 以下に作成できる画面を乗せておきます。
 
 `AuthBasePage.tsx`と`PasswordForget.form.tsx`を組み合わせた画面。
+`/password-forget`に遷移すると表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/99f9a9e63896-20230225.png =600x)
 *パスワード忘れ画面*
 
 `AuthBasePage.tsx`と`PasswordReset.form.tsx`を組み合わせた画面。
+（`/password-forget`に遷移後、メールアドレスを入力してボタンを押下すると遷移します。）
 
 ![](https://storage.googleapis.com/zenn-user-upload/ffb6b2886b5d-20230225.png =600x)
 *パスワード再設定画面*
 
 `AuthBasePage.tsx`と`PasswordChange.form.tsx`を組み合わせた画面。
+`/password-change`に遷移すると表示されます。
 
 ![](https://storage.googleapis.com/zenn-user-upload/6d972248aa69-20230225.png =600x)
 *パスワード変更画面*
