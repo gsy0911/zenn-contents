@@ -3,7 +3,7 @@ title: "cognitoの各種認証画面を独自実装する"
 emoji: "🔱"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["cognito", "nextjs", "mui"]
-published: false
+published: true
 ---
 
 # はじめに
