@@ -13,6 +13,7 @@
 | Lambda@Edgeを利用してCloudFrontにcognito認証をかける          | [1cd558034afc67b52a46](./articles/1cd558034afc67b52a46.md) | [LINK](https://zenn.dev/gsy0911/articles/1cd558034afc67b52a46) |
 | SSMでアクセス可能なEC2をCDKで作成する                           | [5bb915ef331d1f](./articles/5bb915ef331d1f.md)             | [LINK](https://zenn.dev/gsy0911/articles/5bb915ef331d1f)       |
 | CDKを使ってNext.jsをS3+CloudFrontの構成にデプロイする            | [69017f1ed7c3cc](./articles/69017f1ed7c3cc.md)             | [LINK](https://zenn.dev/gsy0911/articles/69017f1ed7c3cc)       |
+| cognitoの各種認証画面を独自実装する                             | [aceb830e4c1e6e](./articles/aceb830e4c1e6e.md)             | [LINK](https://zenn.dev/gsy0911/articles/aceb830e4c1e6e)       |
 
 ```shell
 # run local
