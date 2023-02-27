@@ -8,23 +8,20 @@ published: false
 
 # はじめに
 
-Cognitoの認証を利用するときに、HostedUIとかはいいけど、やっぱり自分で作りたいと思う時があります。
-HostedUIはサービスのイメージに合わなかったりするためです。
-また、AmplifyUIもありますが、これも利用しなくても画面は実装していきます。
+本記事では、Cognitoの各種認証画面を独自に実装していきます。
+HostedUIやAmplifyUIは便利ですが、サービスのイメージに合わなかったりするためです。
 
-そこで、今回はUIフレームワークの1つであるMUIを使ってサインイン画面やパスワード変更画面などを実装していきます。
-画面は`MUI`をベースに作られていますが、認証まわりの処理は単一のファイルとして切り出されているため、`React`や`Next.js`を利用する場合なら、
-ほぼほぼコピペで利用できるかと思います。
+UIフレームワークのMUIを使ってサインイン画面やパスワード変更画面などを実装していきます。
+画面は`MUI`で作られていますが、認証まわりの処理は単一のファイルとして切り出しています。
+そのため`React`や`Next.js`を利用する場合なら、ほぼほぼコピペで利用できるかと思います。
 
 主に参考にしたのは以下の記事になっています。
 
 https://mseeeen.msen.jp/react-auth-with-ready-made-cognito/
 
-この記事の中でも述べられていますが、`aws-amplify`の中の`Auth`モジュールを利用して
-認証まわりの処理を組んでいきます。
-このモジュールは`Amplify`とは何も関係がなく単純に認証モジュールとして便利なため利用します。
-
-
+この記事の中でも述べられていますが、
+`aws-amplify`の中の`Auth`モジュールを利用して認証まわりの処理を組んでいきます。
+このモジュールは`Amplify`は単純に認証モジュールとして便利なため利用します。
 
 ログインの見た目はMUIを使っているので、以下のページのを参考にしました。
 
@@ -66,7 +63,7 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 今回はサインアップ画面はなく、AWSコンソールのcognitoの画面でユーザーを作成した後に、
 この認証画面を利用してもらう想定になっています。
 そのため、どちらかというとプライベートなサービスの場合を想定しています。
-（サインアップ画面を作れば誰でも登録・利用開始できるサービスにも利用と思います。）
+（サインアップ画面を作れば誰でも登録・利用開始できるサービスにも利用可能です。）
 
 ## デプロイ環境
 
@@ -126,11 +123,19 @@ frontend/
 
 ## cognitoの設定
 
+
+ユーザープールがない場合は、ユーザープールを新規作成した上で、
+アプリケーションクライアントを作成してください。
+cognitoのアプリケーションクライアントの設定は以下のようになっています。
+
+- パブリッククライアント（クライアントシークレットを発行しないクライアント）
+- 認証フローは`ALLOW_REFRESH_TOKEN_AUTH`と`ALLOW_USER_SRP_AUTH`のみ
+
 ## 認証用フックの準備
 
 今回の大事なコードの1つである`cognito-auth.tsx`について説明します。
 このファイルでは認証の各種関数や状態を管理するようになっています。
-このファイルは、[参考記事](https://mseeeen.msen.jp/react-auth-with-ready-made-cognito/)内容にいくつかの関数を追加しています。
+このファイルは、[参考記事](https://mseeeen.msen.jp/react-auth-with-ready-made-cognito/)の内容にいくつかの関数を追加しています。
 
 ファイルは長いので、見たい場合はアコーディオンを開いてください。
 
@@ -451,10 +456,10 @@ const useProvideAuth = (): UseAuth => {
 
 変更点は、以下の通りです。
 
-- `signInComplete`, `changePassword`, `forgetPassword`, `resetPassword`の関数の追加。
-  - これによって、必要な処理を実装できます。
-- `currentAuthenticatedUser`の追加。
-  - userを取得することができます。
+- `signInComplete`, `changePassword`, `forgetPassword`, `resetPassword`の関数の追加
+  - これによって、必要な処理を実装する
+- `currentAuthenticatedUser`の追加
+  - `changePassword`の実行時に必要な`user`を取得する
 
 ## 各種認証画面の作成
 
@@ -546,19 +551,19 @@ export const AuthBasePage: React.FC<{ title: string, children: React.ReactNode }
 このコンポーネントに伝播させるために利用しています。
 どのように画面に表示させるか次第ですが、
 `react-hook-form`のエラー機能を利用したら、不要かもしれないです。
-本サンプルでは、画面下に表示されるようになっています。
+本サンプルでは、画面左下に表示されるようになっています。
 
 ![](https://storage.googleapis.com/zenn-user-upload/e9353726a969-20230226.png =600x)
-*エラーメッセージの表示例*
+*エラーメッセージの表示例（サインイン画面）*
 
 ### サインイン画面の作成
 
-一例といてサインイン画面の構成について見ていきます。
+一例としてサインイン画面の構成について見ていきます。
 利用するのは、`SignIn.form.tsx`です。
 このtsxファイルでは、フォームのみを管理しています。
 
 ![](https://storage.googleapis.com/zenn-user-upload/2fd3e250ffbb-20230225.png =600x)
-*サインイン画面*
+*サインイン画面（再掲）*
 
 
 ```typescript jsx: SignIn.form.tsx
@@ -659,6 +664,34 @@ export const SignInForm: React.FC<{setSignInCompleteRequired: (state: boolean) =
 }
 ```
 
+`SignIn.form.tsx`ができたら、`AuthBasePage.tsx`と組み合わせます。
+そうすることで、上のような画面になります。
+また、サインイン画面は`SignInComplete.form.tsx`の内容も組み合わせて、
+初回ログイン時のパスワード変更要求にも応えられるようにしています。
+
+```typescript jsx: pages/signin/index.tsx
+import type {NextPage} from 'next'
+import React, {useState} from 'react';
+import {SignInForm, AuthBasePage, SignInCompleteForm} from '@/page';
+
+const Home: NextPage = () => {
+  const [signInCompleteRequired, setSignInCompleteRequired] = useState(false)
+  return (
+    <>
+      <AuthBasePage title={"サインイン"}>
+        {
+          signInCompleteRequired
+            ? <SignInCompleteForm/>
+            : <SignInForm setSignInCompleteRequired={setSignInCompleteRequired}/>
+        }
+
+      </AuthBasePage>
+    </>
+  )
+}
+
+export default Home
+```
 
 ### その他の画面について
 
@@ -684,8 +717,20 @@ export const SignInForm: React.FC<{setSignInCompleteRequired: (state: boolean) =
 ![](https://storage.googleapis.com/zenn-user-upload/6d972248aa69-20230225.png =600x)
 *パスワード変更画面*
 
+# CloudFrontにデプロイする
+
+作成したサービスは、以下の記事を参考にしてもらうとCloudFrontなどにデプロイできます。
+セキュリティ的にも比較的高くデプロイできるのでおすすめです！
+
+
+https://zenn.dev/gsy0911/articles/69017f1ed7c3cc
 
 # おわりに
+
+サインイン画面やそのほかの認証まわりに必要な処理と画面について紹介しました。
+誰かの助けになれば嬉しいです！
+
+また、参考に載せてある記事も大変有用なので、是非合わせてご覧ください！
 
 # 参考
 
