@@ -51,6 +51,33 @@ Route 53とACMを設定する必要があります。
 
 ## ディレクトリ構成
 
+ディレクトリ構成は以下のようになっています。
+lambdaはnodeとPythonで動くものは作ってあります。
+nodeは参考にしてあった記事のコードが、Pythonはそれをベースに作成したコードがあります。
+nodeの方が機能としては豊富になっているので、nodeのコードを利用することを推奨します。
+
+```text
+/infrastructure/lib
+├── CloudFrontAssetsStack.ts
+├── common.ts
+├── index.ts
+├── lambda
+│  ├── image_resize_node
+│  │  ├── origin_response.js
+│  │  ├── package.json
+│  │  └── viewer_request.js
+│  └── image_resize_python
+│     ├── origin_response
+│     │  ├── handler.py
+│     │  └── requirements.txt
+│     └── viewer_request
+│        └── handler.py
+├── LambdaEdgeStack.ts
+├── params.example.ts
+├── params.ts
+└── XRegionParam.ts
+```
+
 ## デプロイ
 
 ### デプロイに必要なパラメータの付与
@@ -63,9 +90,79 @@ $ cd infra
 $ cp paramsExample.ts params.ts
 ```
 
+以下の`params.ts`にある項目を更新します。
+
 ```diff typescript:params.ts
-+ a
-- b
+import { IAssetsLambdaEdgeStack } from './LambdaEdgeStack'
+import { ICfAssetsStack } from './CloudFrontAssetsStack';
+import { Environment } from 'aws-cdk-lib';
+
+- const accountId: string = "000011112222"
+- const s3BucketName: string = "your-buket"
++ const accountId: string = "777788889999"
++ const s3BucketName: string = "assets-bucket"
+
+/**  */
+export const cfAssetsParams: ICfAssetsStack = {
+  cloudfront: {
+-   certificate: "arn:aws:acm:us-east-1:000011112222:certificate/aaaabbbb-cccc-dddd-eeee-ffffgggghhhh",
++   certificate: "arn:aws:acm:us-east-1:777788889999:certificate/iiiijjjj-kkkk-llll-mmmm-ooooppppqqqq",
+-   route53DomainName: "your.domain.com",
+-   route53RecordName: "record.your.domain.com",
++   route53DomainName: "example.com",
++   route53RecordName: "assets.example.com",
+    s3BucketName,
+  }
+}
+
+export const assetsLambdaEdgeParams: IAssetsLambdaEdgeStack = {
+  s3BucketName
+}
+
+export const envApNortheast1: Environment = {
+  account: accountId,
+  region: "ap-northeast-1"
+}
+
+export const envUsEast1: Environment = {
+  account: accountId,
+  region: "us-east-1"
+}
+
+```
+
+加えて、利用する言語に応じてBucketの名前を直接記述してください。
+Lambda@Edgeは環境変数も利用できないため、ハードコードが必要になります。
+
+node版は以下のファイルを変更してください。
+
+```diff javascript:infrastructure/lib/lambda/image_resize_node/origin_response.js
+~~ 前略 ~~
+
+const Sharp = require('sharp');
+
+// set the S3 endpoints
+- const BUCKET = 'your-bucket-here';
++ const BUCKET = 'assets-bucket';
+
+exports.handler = (event, context, callback) => {
+
+~~ 後略 ~~
+```
+
+Python版は以下のファイルを変更してください。
+
+```diff python:infrastructure/lib/lambda/image_resize_python/origin_response/handler.py
+~~ 前略 ~~
+
+DEFAULT_QUALITY = 50
+- BUCKET = "your-bucket-here"
++ BUCKET = "assets-bucket"
+
+
+def resize_image(
+
+~~ 後略 ~~
 ```
 
 ### デプロイ実行
