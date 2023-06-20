@@ -31,7 +31,7 @@ AWSが公式に、動的に様々なサイズの画像を作成・配信する�
 
 ## 料金
 
-利用するのはCloudFrontとS3のみなので、余程のことがない限り0円で実行できます。
+利用するCloudFrontとS3は余程のことがない限り0円で実行できます。
 唯一、Route 53でドメインを利用する必要があり、そこだけ料金がかかります。
 取得するドメインによっても変わりますが、年額で1500円〜程度です。
 
@@ -56,6 +56,9 @@ lambdaはnodeとPythonで動くものは作ってあります。
 nodeは参考にしてあった記事のコードが、Pythonはそれをベースに作成したコードがあります。
 nodeの方が機能としては豊富になっているので、nodeのコードを利用することを推奨します。
 
+大事なのは`lambda/`にある`viewer_request.js`と`origin_response.js`のファイルです。
+（python側にも同じような名前のファイルがありますが、同じような処理をしています。）
+
 ```text
 /infrastructure/lib
 ├── CloudFrontAssetsStack.ts
@@ -63,9 +66,9 @@ nodeの方が機能としては豊富になっているので、nodeのコード
 ├── index.ts
 ├── lambda
 │  ├── image_resize_node
-│  │  ├── origin_response.js
+│  │  ├── origin_response.js 👈 変換後の画像がない場合に、リサイズ・保存を実施して画像を返す
 │  │  ├── package.json
-│  │  └── viewer_request.js
+│  │  └── viewer_request.js 👈 リクエストのURLをパラメータを元に変更する
 │  └── image_resize_python
 │     ├── origin_response
 │     │  ├── handler.py
@@ -76,6 +79,187 @@ nodeの方が機能としては豊富になっているので、nodeのコード
 ├── params.example.ts
 ├── params.ts
 └── XRegionParam.ts
+```
+
+`viewer_request.js`と`origin_response.js`のうちの重要な箇所を説明します。
+
+
+```javascript: infrastructure/lib/lambda/image_resize_node/viewer_request.js
+const defaultHandler = (event, context, callback) => {
+  const request = event.Records[0].cf.request;
+  const headers = request.headers;
+
+  // parse the querystrings key-value pairs. In our case it would be d=100x100
+  const params = querystring.parse(request.querystring);
+  // fetch the uri of original image
+  let fwdUri = request.uri;
+  console.log(`fwdUri: ${fwdUri}`)
+
+  // if there is no dimension attribute, just pass the request
+  if (!params.d) {
+    callback(null, request);
+    return;
+  }
+  // read the dimension parameter value = width x height and split it by 'x'
+  const dimensionMatch = params.d.split("x");
+
+  // set the width and height parameters
+  let width = dimensionMatch[1];
+  let height = dimensionMatch[2];
+
+  // parse the prefix, image name and extension from the uri.
+  // In our case /images/image.jpg
+
+  const match = fwdUri.match(/(.*)\/(.*)\.(.*)/);
+
+  let prefix = match[1];
+  let imageName = match[2];
+  let extension = match[3];
+
+  // define variable to be set to true if requested dimension is allowed.
+  let matchFound = false;
+
+  // calculate the acceptable variance. If image dimension is 105 and is within acceptable
+  // range, then in our case, the dimension would be corrected to 100.
+  let variancePercent = (variables.variance / 100);
+
+  for (let dimension of variables.allowedDimension) {
+    let minWidth = dimension.w - (dimension.w * variancePercent);
+    let maxWidth = dimension.w + (dimension.w * variancePercent);
+    if (width >= minWidth && width <= maxWidth) {
+      width = dimension.w;
+      height = dimension.h;
+      matchFound = true;
+      break;
+    }
+  }
+  // if no match is found from allowed dimension with variance then set to default
+  //dimensions.
+  if (!matchFound) {
+    width = variables.defaultDimension.w;
+    height = variables.defaultDimension.h;
+  }
+
+  // read the accept header to determine if webP is supported.
+  let accept = headers['accept'] ? headers['accept'][0].value : "";
+
+  let url = [];
+  // build the new uri to be forwarded upstream
+  url.push(prefix);
+  url.push(width + "x" + height);
+
+  // check support for webp
+  if (accept.includes(variables.webpExtension)) {
+    url.push(variables.webpExtension);
+  } else {
+    url.push(extension);
+  }
+  url.push(imageName + "." + extension);
+
+  fwdUri = url.join("/");
+
+  // final modified url is of format /images/200x200/webp/image.jpg
+  request.uri = fwdUri;
+  console.log(`fwdUri: ${fwdUri}`)
+  console.log(`extension is: ${extension}`)
+  callback(null, request);
+};
+```
+
+```javascript: infrastructure/lib/lambda/image_resize_node/origin_response.js
+exports.handler = (event, context, callback) => {
+  const response = event.Records[0].cf.response;
+
+  console.log("Response status code: %s", response.status);
+
+  //check if image is not present
+  if (response.status === 403 || response.status === 404 || response.status === "403" || response.status === "404") {
+
+    let request = event.Records[0].cf.request;
+    let params = querystring.parse(request.querystring);
+
+    // if there is no dimension attribute, just pass the response
+    if (!params.d) {
+      callback(null, response);
+      return;
+    }
+
+    // read the required path. Ex: uri /images/100x100/webp/image.jpg
+    let path = request.uri;
+
+    // read the S3 key from the path variable.
+    // Ex: path variable /images/100x100/webp/image.jpg
+    let key = path.substring(1);
+
+    // parse the prefix, width, height and image name
+    // Ex: key=images/200x200/webp/image.jpg
+    let prefix, originalKey, match, width, height, requiredFormat, imageName;
+
+    try {
+      match = key.match(/(.*)\/(\d+)x(\d+)\/(.*)\/(.*)/);
+      prefix = match[1];
+      width = parseInt(match[2], 10);
+      height = parseInt(match[3], 10);
+
+      // correction for jpg required for 'Sharp'
+      requiredFormat = match[4] === "jpg" ? "jpeg" : match[4];
+      imageName = match[5];
+      originalKey = prefix + "/" + imageName;
+    }
+    catch (err) {
+      // no prefix exist for image
+      console.log("no prefix present..");
+      match = key.match(/(\d+)x(\d+)\/(.*)\/(.*)/);
+      width = parseInt(match[1], 10);
+      height = parseInt(match[2], 10);
+
+      // correction for jpg required for 'Sharp'
+      requiredFormat = match[3] === "jpg" ? "jpeg" : match[3];
+      imageName = match[4];
+      originalKey = imageName;
+    }
+    console.log(`originalKey: ${originalKey}`)
+    console.log(`imageName: ${imageName}`)
+    console.log(`requiredFormat: ${requiredFormat}`)
+
+    // get the source image file
+    S3.getObject({ Bucket: BUCKET, Key: originalKey }).promise()
+      // perform the resize operation
+      .then(data => Sharp(data.Body)
+        .resize(width, height)
+        .toFormat(requiredFormat)
+        .toBuffer()
+      )
+      .then(buffer => {
+        // save the resized object to S3 bucket with appropriate object key.
+        S3.putObject({
+            Body: buffer,
+            Bucket: BUCKET,
+            ContentType: 'image/' + requiredFormat,
+            CacheControl: 'max-age=31536000',
+            Key: key,
+            StorageClass: 'STANDARD'
+        }).promise()
+        // even if there is exception in saving the object we send back the generated
+        // image back to viewer below
+        .catch(() => { console.log("Exception while writing resized image to bucket")});
+
+        // generate a binary response with resized image
+        response.status = 200;
+        response.body = buffer.toString('base64');
+        response.bodyEncoding = 'base64';
+        response.headers['content-type'] = [{ key: 'Content-Type', value: 'image/' + requiredFormat }];
+        callback(null, response);
+      })
+    .catch( err => {
+      console.log("Exception while reading source image :%j",err);
+    });
+  } // end of if block checking response statusCode
+  else {
+    // allow the response to pass through
+    callback(null, response);
+  }
+};
 ```
 
 ## デプロイ
@@ -168,7 +352,14 @@ def resize_image(
 ### デプロイ実行
 
 上記の準備が終わったら、デプロイをします。
+デプロイは以下のコマンドを実行するだけです。
 
+```shell
+# /infrastructureディレクトリにて実行
+$ cdk deploy zenn-cf-resize-cloudfront
+```
+
+上記のコマンドで、`addDependency`でnodeの`Lambda@Edge`もデプロイされます。
 
 ## リソースの削除
 
@@ -179,3 +370,7 @@ $ cdk destroy
 ```
 
 # おわりに
+
+画像のリクエスト時にリサイズして保存して、配信する仕組みを紹介しました。
+色々と制約もあって完全に全てのケースを網羅できるわけではないですが、
+役に立つシーンはあるかと思います。
