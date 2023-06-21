@@ -19,7 +19,14 @@ AWSが公式に、動的に様々なサイズの画像を作成・配信する�
 
 ## 利用時のイメージ
 
-画像のURLにパラメータを付与して取得。パラメータに応じて変換された画像を取得。
+![](https://storage.googleapis.com/zenn-user-upload/22a860c7d9a7-20230621.png =600x)
+
+1. サーバーに`https://your.domain.com/images/some_file.jpg?d=200x200` でアクセスする
+2. `Lambda@Edge`にてURLが`https://your.domain.com/images/200x200/webp/some_file.jpg` に変換される
+3. 変換されたURLでS3にアクセスする
+4. S3にファイルが存在した場合6.に飛び、存在しない場合は5.の処理を実施する
+5. 元々のアクセス先である`images/some_file.jpg`の画像を変換し、`images/200x200/webp/some_file.jpg`へ保存する
+6. 取得したファイルか、変換したファイルを返す
 
 # 環境・料金
 
@@ -52,30 +59,23 @@ Route 53とACMを設定する必要があります。
 ## ディレクトリ構成
 
 ディレクトリ構成は以下のようになっています。
-lambdaはnodeとPythonで動くものは作ってあります。
-nodeは参考にしてあった記事のコードが、Pythonはそれをベースに作成したコードがあります。
-nodeの方が機能としては豊富になっているので、nodeのコードを利用することを推奨します。
 
 大事なのは`lambda/`にある`viewer_request.js`と`origin_response.js`のファイルです。
-（python側にも同じような名前のファイルがありますが、同じような処理をしています。）
+（実際のリポジトリには、Python版もありますが言語を変えているだけなので省略します。）
+
+XRegionParamの動作については[こちらの記事](https://zenn.dev/gsy0911/articles/820313c08a545922733f)をご覧ください。
 
 ```text
 /infrastructure/lib
+├── lambda/
+│  └── image_resize_node/
+│     ├── origin_response.js 👈 変換後の画像がない場合に、リサイズ・保存を実施して画像を返す
+│     ├── package.json
+│     └── viewer_request.js 👈 リクエストのURLをパラメータを元に変更する
 ├── CloudFrontAssetsStack.ts
+├── LambdaEdgeStack.ts
 ├── common.ts
 ├── index.ts
-├── lambda
-│  ├── image_resize_node
-│  │  ├── origin_response.js 👈 変換後の画像がない場合に、リサイズ・保存を実施して画像を返す
-│  │  ├── package.json
-│  │  └── viewer_request.js 👈 リクエストのURLをパラメータを元に変更する
-│  └── image_resize_python
-│     ├── origin_response
-│     │  ├── handler.py
-│     │  └── requirements.txt
-│     └── viewer_request
-│        └── handler.py
-├── LambdaEdgeStack.ts
 ├── params.example.ts
 ├── params.ts
 └── XRegionParam.ts
