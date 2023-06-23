@@ -28,6 +28,8 @@ AWSが公式に、動的に様々なサイズの画像を作成・配信する�
 5. 元々のアクセス先である`images/some_file.jpg`の画像を変換し、`images/200x200/webp/some_file.jpg`へ保存する
 6. 取得したファイルか、変換したファイルを返す
 
+画像をリサイズした後に保存しておくことで、2回目以降のリサイズ処理は無くせます。
+
 # 環境・料金
 
 ## 環境
@@ -61,7 +63,7 @@ Route 53とACMを設定する必要があります。
 ディレクトリ構成は以下のようになっています。
 
 大事なのは`lambda/`にある`viewer_request.js`と`origin_response.js`のファイルです。
-（実際のリポジトリには、Python版もありますが言語を変えているだけなので省略します。）
+（リポジトリには、Python版もありますが言語が違うだけなので説明も含め省略します。）
 
 XRegionParamの動作については[こちらの記事](https://zenn.dev/gsy0911/articles/820313c08a545922733f)をご覧ください。
 
@@ -307,9 +309,9 @@ export const envUsEast1: Environment = {
 ```
 
 加えて、利用する言語に応じてBucketの名前を直接記述してください。
-Lambda@Edgeは環境変数も利用できないため、ハードコードが必要になります。
+Lambda@Edgeでは環境変数が利用できないためです。
 
-node版は以下のファイルを変更してください。
+以下のファイルを変更してください。
 
 ```diff javascript:infrastructure/lib/lambda/image_resize_node/origin_response.js
 ~~ 前略 ~~
@@ -321,21 +323,6 @@ const Sharp = require('sharp');
 + const BUCKET = 'assets-bucket';
 
 exports.handler = (event, context, callback) => {
-
-~~ 後略 ~~
-```
-
-Python版は以下のファイルを変更してください。
-
-```diff python:infrastructure/lib/lambda/image_resize_python/origin_response/handler.py
-~~ 前略 ~~
-
-DEFAULT_QUALITY = 50
-- BUCKET = "your-bucket-here"
-+ BUCKET = "assets-bucket"
-
-
-def resize_image(
 
 ~~ 後略 ~~
 ```
@@ -352,9 +339,17 @@ $ cdk deploy zenn-cf-resize-cloudfront
 
 上記のコマンドで、`addDependency`でnodeの`Lambda@Edge`もデプロイされます。
 
+### 挙動の確認
+
+挙動の確認方法としては、適当な画像をS3にアップロードして、
+CloudFront経由でアクセスしてみてください。
+その際に、URLの末尾に`?d=200x200`などとするとリサイズ処理をかけることができます。
+
+
 ## リソースの削除
 
 テストなどで作成する場合は、以下のコマンドを実行してリソースを削除してください。
+削除時には、Lambda@Edgeを利用している関係で、少し時間がかかります。
 
 ```shell
 $ cdk destroy
