@@ -82,6 +82,11 @@ XRegionParamの動作については[こちらの記事](https://zenn.dev/gsy091
 ```
 
 `viewer_request.js`と`origin_response.js`のうちの重要な箇所を説明します。
+元記事のコードからはほとんど変えていません。
+
+`viewer_request.js`では、アクセスするURIを変更しています。
+例えば、`/images/some_file.jpg?d=200x200`のURIへアクセスすると、
+`/images/200x200/webp/some_file.jpg`というURIに変更します。
 
 
 ```javascript: infrastructure/lib/lambda/image_resize_node/viewer_request.js
@@ -89,40 +94,31 @@ const defaultHandler = (event, context, callback) => {
   const request = event.Records[0].cf.request;
   const headers = request.headers;
 
-  // parse the querystrings key-value pairs. In our case it would be d=100x100
   const params = querystring.parse(request.querystring);
-  // fetch the uri of original image
   let fwdUri = request.uri;
-  console.log(`fwdUri: ${fwdUri}`)
 
-  // if there is no dimension attribute, just pass the request
+  // パラメータが渡されない場合には、
+  // Lambda@Edgeでの処理を終了して、そのままの大きさの画像を返すようにしている
   if (!params.d) {
     callback(null, request);
     return;
   }
-  // read the dimension parameter value = width x height and split it by 'x'
-  const dimensionMatch = params.d.split("x");
 
-  // set the width and height parameters
+  // `d`で与えられたパラメータをxで分解して、widthとheightとして取得
+  const dimensionMatch = params.d.split("x");
   let width = dimensionMatch[1];
   let height = dimensionMatch[2];
 
-  // parse the prefix, image name and extension from the uri.
-  // In our case /images/image.jpg
-
+  // アクセス先のURIをパースする。例えば、/images/image.jpg
   const match = fwdUri.match(/(.*)\/(.*)\.(.*)/);
-
   let prefix = match[1];
   let imageName = match[2];
   let extension = match[3];
 
-  // define variable to be set to true if requested dimension is allowed.
+  // 受け付けられる画像サイズのみの判定をしている。
+  // 全ての画像サイズを受け付けられるようにすると、ユーザーが無限にファイルを生成できてしまうため
   let matchFound = false;
-
-  // calculate the acceptable variance. If image dimension is 105 and is within acceptable
-  // range, then in our case, the dimension would be corrected to 100.
   let variancePercent = (variables.variance / 100);
-
   for (let dimension of variables.allowedDimension) {
     let minWidth = dimension.w - (dimension.w * variancePercent);
     let maxWidth = dimension.w + (dimension.w * variancePercent);
@@ -133,38 +129,42 @@ const defaultHandler = (event, context, callback) => {
       break;
     }
   }
-  // if no match is found from allowed dimension with variance then set to default
-  //dimensions.
   if (!matchFound) {
     width = variables.defaultDimension.w;
     height = variables.defaultDimension.h;
   }
 
-  // read the accept header to determine if webP is supported.
-  let accept = headers['accept'] ? headers['accept'][0].value : "";
-
+  // 新しくアクセスするためのURIを構築していく
   let url = [];
-  // build the new uri to be forwarded upstream
   url.push(prefix);
   url.push(width + "x" + height);
 
-  // check support for webp
+  // webpの確認
+  let accept = headers['accept'] ? headers['accept'][0].value : "";
   if (accept.includes(variables.webpExtension)) {
     url.push(variables.webpExtension);
   } else {
     url.push(extension);
   }
   url.push(imageName + "." + extension);
-
   fwdUri = url.join("/");
 
-  // final modified url is of format /images/200x200/webp/image.jpg
+  // CloudFrontへアクセスする際のURIを`/images/200x200/webp/image.jpg`に変更する
   request.uri = fwdUri;
-  console.log(`fwdUri: ${fwdUri}`)
-  console.log(`extension is: ${extension}`)
   callback(null, request);
 };
 ```
+
+`origin_response.js`では、S3からの画像の取得状況に応じて以下のような挙動をします。
+
+- ファイルが存在した場合
+  - 何もせずに結果をそのまま返す
+- ファイルが存在しない場合
+  - 元のURIにアクセスして画像を取得
+  - 取得した画像のリサイズ
+  - リサイズした画像の保存
+  - 結果を返す
+
 
 ```javascript: infrastructure/lib/lambda/image_resize_node/origin_response.js
 exports.handler = (event, context, callback) => {
@@ -172,29 +172,25 @@ exports.handler = (event, context, callback) => {
 
   console.log("Response status code: %s", response.status);
 
-  //check if image is not present
+  // S3から取得した時のスタータスコードの確認
+  // 画像が存在しない場合のみ、リサイズなどの処理を実施
   if (response.status === 403 || response.status === 404 || response.status === "403" || response.status === "404") {
 
     let request = event.Records[0].cf.request;
     let params = querystring.parse(request.querystring);
 
-    // if there is no dimension attribute, just pass the response
+    // パラメータがない場合には、本当に画像が無い場合なのでそのままの結果を返す
     if (!params.d) {
       callback(null, response);
       return;
     }
 
-    // read the required path. Ex: uri /images/100x100/webp/image.jpg
+    // URIを取得する。ここでは`path=/images/100x100/webp/image.jpg`
     let path = request.uri;
-
-    // read the S3 key from the path variable.
-    // Ex: path variable /images/100x100/webp/image.jpg
+    // 先頭の`/`を削除して、`key=images/200x200/webp/image.jpg`とする
     let key = path.substring(1);
-
-    // parse the prefix, width, height and image name
-    // Ex: key=images/200x200/webp/image.jpg
+    // prefix, width, height, imageNameを取得していく
     let prefix, originalKey, match, width, height, requiredFormat, imageName;
-
     try {
       match = key.match(/(.*)\/(\d+)x(\d+)\/(.*)\/(.*)/);
       prefix = match[1];
@@ -218,20 +214,17 @@ exports.handler = (event, context, callback) => {
       imageName = match[4];
       originalKey = imageName;
     }
-    console.log(`originalKey: ${originalKey}`)
-    console.log(`imageName: ${imageName}`)
-    console.log(`requiredFormat: ${requiredFormat}`)
 
-    // get the source image file
+    // パースした結果からS3にアクセスして画像ファイルを取得
     S3.getObject({ Bucket: BUCKET, Key: originalKey }).promise()
-      // perform the resize operation
+      // sharpでのリサイズ処理
       .then(data => Sharp(data.Body)
         .resize(width, height)
         .toFormat(requiredFormat)
         .toBuffer()
       )
       .then(buffer => {
-        // save the resized object to S3 bucket with appropriate object key.
+        // リサイズした結果をS3に保存する
         S3.putObject({
             Body: buffer,
             Bucket: BUCKET,
@@ -240,11 +233,9 @@ exports.handler = (event, context, callback) => {
             Key: key,
             StorageClass: 'STANDARD'
         }).promise()
-        // even if there is exception in saving the object we send back the generated
-        // image back to viewer below
         .catch(() => { console.log("Exception while writing resized image to bucket")});
 
-        // generate a binary response with resized image
+        // CloudFrontからのレスポンスを編集する
         response.status = 200;
         response.body = buffer.toString('base64');
         response.bodyEncoding = 'base64';
@@ -254,9 +245,9 @@ exports.handler = (event, context, callback) => {
     .catch( err => {
       console.log("Exception while reading source image :%j",err);
     });
-  } // end of if block checking response statusCode
+  }
   else {
-    // allow the response to pass through
+    // 画像が存在する場合
     callback(null, response);
   }
 };
