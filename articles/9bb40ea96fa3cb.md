@@ -3,7 +3,7 @@ title: "CloudFrontで画像をリサイズしつつ配信する"
 emoji: "🖼️"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["AWS", "AWSCDK", "CloudFront", "S3"]
-published: false
+published: true
 ---
 
 # はじめに
