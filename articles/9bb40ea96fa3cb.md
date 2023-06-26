@@ -36,7 +36,7 @@ AWSが公式に、動的に様々なサイズの画像を作成・配信する�
 
 - macOS: 13.4
 - Node.js: 18.16
-- AWS CDK: 2.84.0
+- AWS CDK: 2.85.0
 
 ## 料金
 
@@ -58,13 +58,16 @@ Route 53とACMを設定する必要があります。
 プログラムはGitHub: [zenn-cloudfront-resize-image](https://github.com/gsy0911/zenn-cloudfront-resize-image)にて公開してあります。
 実際に動かしたい場合はcloneして実行してみてください。
 
+:::message
+リポジトリには、Pythonで画像の変換処理をしているコードもあります。
+基本的な考えは同じで言語が違うだけなのでnode版のみの説明をします。
+:::
+
+
 ## ディレクトリ構成
 
 ディレクトリ構成は以下のようになっています。
-
 大事なのは`lambda/`にある`viewer_request.js`と`origin_response.js`のファイルです。
-（リポジトリには、Python版もありますが言語が違うだけなので説明も含め省略します。）
-
 XRegionParamの動作については[こちらの記事](https://zenn.dev/gsy0911/articles/820313c08a545922733f)をご覧ください。
 
 ```text
@@ -263,7 +266,7 @@ exports.handler = (event, context, callback) => {
 `infra/`に保存されている`paramsExample.ts`をコピーして`params.ts`を作成します。
 
 ```shell
-$ cd infra
+$ cd infrastructure
 $ cp paramsExample.ts params.ts
 ```
 
@@ -279,7 +282,6 @@ import { Environment } from 'aws-cdk-lib';
 + const accountId: string = "777788889999"
 + const s3BucketName: string = "assets-bucket"
 
-/**  */
 export const cfAssetsParams: ICfAssetsStack = {
   cloudfront: {
 -   certificate: "arn:aws:acm:us-east-1:000011112222:certificate/aaaabbbb-cccc-dddd-eeee-ffffgggghhhh",
@@ -305,7 +307,6 @@ export const envUsEast1: Environment = {
   account: accountId,
   region: "us-east-1"
 }
-
 ```
 
 加えて、利用する言語に応じてBucketの名前を直接記述してください。
@@ -339,12 +340,23 @@ $ cdk deploy zenn-cf-resize-cloudfront
 
 上記のコマンドで、`addDependency`でnodeの`Lambda@Edge`もデプロイされます。
 
+デプロイが完了したら、CloudFrontの画面に行き「オリジン」→「編集」を押下し、
+
+![](https://storage.googleapis.com/zenn-user-upload/994a652fe2c3-20230626.png =600x)
+
+「はい、バケットポリシーを自動で更新します」を選択して「変更を保存」を押下してください。
+
+![](https://storage.googleapis.com/zenn-user-upload/10fd97696f04-20230626.png =600x)
+
+こうすることで、CloudFrontからS3へのアクセスをOAIを介してアクセスできます。
+
 ### 挙動の確認
 
 挙動の確認方法としては、適当な画像をS3にアップロードして、
 CloudFront経由でアクセスしてみてください。
 その際に、URLの末尾に`?d=200x200`などとするとリサイズ処理をかけることができます。
 
+そして、S3にも変換後のファイルが保存されているかの確認もしてください。
 
 ## リソースの削除
 
@@ -360,3 +372,7 @@ $ cdk destroy
 画像のリクエスト時にリサイズして保存して、配信する仕組みを紹介しました。
 色々と制約もあって完全に全てのケースを網羅できるわけではないですが、
 役に立つシーンはあるかと思います。
+
+# 参考
+
+- （再掲）：[Amazon CloudFront & Lambda@Edge で画像をリサイズする](https://aws.amazon.com/jp/blogs/news/resizing-images-with-amazon-cloudfront-lambdaedge-aws-cdn-blog/)
