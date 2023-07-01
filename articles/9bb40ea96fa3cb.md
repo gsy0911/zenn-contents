@@ -15,17 +15,17 @@ https://aws.amazon.com/jp/blogs/news/resizing-images-with-amazon-cloudfront-lamb
 
 AWSが公式に、動的に様々なサイズの画像を作成・配信する方法を公開しています。
 元記事ではCloudFormationを利用していますが、CDKで書き直してみました。
-（提供されている関数も動くように修正などしてあります）
+提供されている関数も、リサイズ処理に関して修正しました。
 
 ## 利用時のイメージ
 
 ![](https://storage.googleapis.com/zenn-user-upload/22a860c7d9a7-20230621.png =600x)
 
-1. サーバーに`https://your.domain.com/images/some_file.jpg?d=200x200` でアクセスする
-2. `Lambda@Edge`にてURLが`https://your.domain.com/images/200x200/webp/some_file.jpg` に変換される
-3. 変換されたURLでS3にアクセスする
+1. サーバーに`https://your.domain.com/images/some_file.jpg?w=200&h=200` でアクセスし、S3へは`/images/some_file.jpg?w=200&h=200`というURIを取得しに行く
+2. `Lambda@Edge`にてURIが`/images/w=1280&h=960&quality=50&ext=webp&fit=inside/webp/some_file.jpg` に変換される
+3. 変換されたURIでS3にアクセスする
 4. S3にファイルが存在した場合6.に飛び、存在しない場合は5.の処理を実施する
-5. 元々のアクセス先である`images/some_file.jpg`の画像を変換し、`images/200x200/webp/some_file.jpg`へ保存する
+5. 元々のアクセス先である`/images/some_file.jpg`の画像を変換し、`/images/w=1280&h=960&quality=50&ext=webp&fit=inside/webp/some_file.jpg`へ保存する
 6. 取得したファイルか、変換したファイルを返す
 
 画像をリサイズした後に保存しておくことで、2回目以降のリサイズ処理は無くせます。
@@ -72,7 +72,7 @@ XRegionParamの動作については[こちらの記事](https://zenn.dev/gsy091
 │     ├── origin_response.js 👈 変換後の画像がない場合に、リサイズ・保存を実施して画像を返す
 │     ├── package.json
 │     ├── utils.js 👈 querystringやURIの処理を実施するファイル
-│     └── viewer_request.js 👈 リクエストのURLをパラメータを元に変更する
+│     └── viewer_request.js 👈 リクエストのURIをパラメータを元に変更する
 ├── CloudFrontAssetsStack.ts
 ├── LambdaEdgeStack.ts
 ├── common.ts
@@ -93,7 +93,7 @@ AWSの元記事のコードからはかなり修正を加えています。
 
 ### `decodeViewerRequestUri = (uri) => object`
 
-ユーザーがリクエストした`/images/image.jpg`などのURLを
+ユーザーがリクエストした`/images/image.jpg`などのURIを
 以下のobjectに変換する。
 変換したobjectは`decodeQuerystring`の引数として利用される。
 
@@ -232,13 +232,12 @@ const decodeQuerystring = (requestQuerystring, decodedUriObj) => {
       break;
     }
   }
-  // if no match is found from allowed dimension with variance then set to default dimensions.
   if (!matchFound) {
     width = limitations.default.dimension.w;
     height = limitations.default.dimension.h;
   }
 
-  // final modified url is of format /images/200x200/webp/image.jpg
+  // 変換後のURI： /images/w=1280&h=960&quality=50&ext=webp&fit=inside/image.jpg
   const updatedQuerystring = `w=${width}&h=${height}&quality=${paramQuality}&ext=${paramExtension}&fit=${paramFit}`
   const decodeSuccessData = {
     width,
@@ -277,8 +276,8 @@ const decodeViewerRequestUri = (uri) => {
 }
 
 const decodeOriginResponseUri = (uri) => {
-  // parse the prefix, image name and extension from the uri.
-  // uri is: images/w=${width}&h=${height}&quality=${paramQuality}&ext=webp&fit=${paramFit}/image.jpg
+  // URIをデコードする
+  // 例: images/w=${width}&h=${height}&quality=${paramQuality}&ext=webp&fit=${paramFit}/image.jpg
   try {
     const match = uri.match(/(.*)\/w=(\d+)&h=(\d+)&quality=(\d+)&ext=(.*)&fit=(.*)\/(.*)\.(.*)/);
     const prefix = match[1];
@@ -480,8 +479,6 @@ exports.handler = (event, context, callback) => {
           Key: subRequestUri,
           StorageClass: 'STANDARD'
         }).promise()
-          // even if there is exception in saving the object we send back the generated
-          // image back to viewer below
           .catch(() => {
             console.log("Exception while writing resized image to bucket")
           });
