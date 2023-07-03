@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task -l
+
+  preview:
+    desc: preview
+    cmds:
+      - npx zenn preview
+
+  article:
+    desc: create new article
+    cmds:
+      - npx zenn new:article
