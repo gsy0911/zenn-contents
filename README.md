@@ -16,6 +16,7 @@
 | cognitoの各種認証画面を独自実装する                             | [aceb830e4c1e6e](./articles/aceb830e4c1e6e.md)             | [LINK](https://zenn.dev/gsy0911/articles/aceb830e4c1e6e)       |
 | 【備忘録】サポート終了したCentOS6.7のDockerイメージの作成              | [bf4e3d45419bb3](./articles/bf4e3d45419bb3.md)             | [LINK](https://zenn.dev/gsy0911/articles/bf4e3d45419bb3)       |
 | CloudFrontで画像をリサイズしつつ配信する                         | [9bb40ea96fa3cb](./articles/9bb40ea96fa3cb.md)             | [LINK](https://zenn.dev/gsy0911/articles/9bb40ea96fa3cb)       |
+| Makefile卒業 & Taskfile入門                           | [0a8e0e2156579d](./articles/0a8e0e2156579d.md)             | [LINK](https://zenn.dev/gsy0911/articles/0a8e0e2156579d)       |
 
 ```shell
 # run local
