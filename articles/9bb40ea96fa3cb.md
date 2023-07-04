@@ -93,9 +93,8 @@ AWSの元記事のコードからはかなり修正を加えています。
 
 ### `decodeViewerRequestUri = (uri) => object`
 
-ユーザーがリクエストした`/images/image.jpg`などのURIを
-以下のobjectに変換する。
-変換したobjectは`decodeQuerystring`の引数として利用される。
+ユーザーがリクエストした`/images/image.jpg`などのURIを以下のobjectに変換します。
+変換したobjectは`decodeQuerystring`の引数として利用されます。
 
 ```json
 {
