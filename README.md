@@ -17,11 +17,8 @@
 | 【備忘録】サポート終了したCentOS6.7のDockerイメージの作成              | [bf4e3d45419bb3](./articles/bf4e3d45419bb3.md)             | [LINK](https://zenn.dev/gsy0911/articles/bf4e3d45419bb3)       |
 | CloudFrontで画像をリサイズしつつ配信する                         | [9bb40ea96fa3cb](./articles/9bb40ea96fa3cb.md)             | [LINK](https://zenn.dev/gsy0911/articles/9bb40ea96fa3cb)       |
 | Makefile卒業 & Taskfile入門                           | [0a8e0e2156579d](./articles/0a8e0e2156579d.md)             | [LINK](https://zenn.dev/gsy0911/articles/0a8e0e2156579d)       |
+| CDKでAWS Batch環境を作成する                              | [b095186292cbab](./articles/b095186292cbab.md)             | [LINK](https://zenn.dev/gsy0911/articles/b095186292cbab)       |
 
-```shell
-# run local
-$ npx zenn preview
-```
 
 # references
 
