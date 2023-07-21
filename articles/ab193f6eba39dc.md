@@ -17,9 +17,13 @@ published: false
 - Docker環境
   - PHP: 8.2
   - Symfony: 5.5系
+  - mysql: 8.0
 
 # 立ち上げからAPI実行まで
 
+## コード
+
+本記事のコードは[GitHub](https://github.com/gsy0911/zenn-php-symfony/tree/article1)にありますので、適宜確認ください。
 
 ## 立ち上げ
 
@@ -40,7 +44,7 @@ $ symfony -V
 Symfony CLI version 5.5.7 (c) 2021-2023 Fabien Potencier #StandWithUkraine Support Ukraine (2023-07-21T10:15:00Z - stable)
 ```
 
-5.5系が入っていることを確認できたら以下のコマンドで新しいプロジェクトを作成します。
+Symfonyの5.5系が入っていることを確認し、新しいプロジェクトを作成します。
 
 ```shell
 $ symfony new . -no-git
@@ -56,7 +60,7 @@ $ symfony new . -no-git
 （大きな差異は、パッケージのインストールがあるかないかだと思っています。）
 ::::
 
-パッケージのインストールを次のコマンドで行います。
+必要なパッケージのインストールを行います。
 途中で聞かれる質問は`n`で大丈夫です。
 
 ```shell
@@ -82,7 +86,7 @@ $ composer require symfony/maker-bundle maker ormfixtures --dev
 $ cp .env .env.local
 ```
 
-次に環境変数ファイルを以下の箇所を変更します。
+環境変数ファイルを以下の箇所を変更します。
 
 ```diff: .env.local
 - DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=15&charset=utf8"
@@ -92,7 +96,7 @@ $ cp .env .env.local
 ## Entityの作成
 
 以下のコマンドを実行すると、実行可能コマンドの一覧が出てきます。
-今回はそのうちの`make:entity`コマンドを使ってみます。
+今回はそのうちの`make:entity`コマンドを使います。
 
 ```shell
 $ symfony console
@@ -101,12 +105,12 @@ $ symfony console
 (...後略)
 ```
 
-例なのでなんでも良いのですが、ひとまず`Book`エンティティを作ってみます。
+例として、`Book`エンティティを作ってみます。
 対話形式で必要なフィールドを入力していくとクラスを作成してくれます。
 
 ```shell
 $ symfony console make:entity Book
-created: src/Entity/Book.php
+ created: src/Entity/Book.php
  created: src/Repository/BookRepository.php
 
  Entity generated! Now let's add some fields!
@@ -266,11 +270,11 @@ mysql> desc `book`;
 3 rows in set (0.01 sec)
 ```
 
-テーブルが作成されていることが確認できました。
+意図した`book`テーブルが作成されていることが確認できました。
 
 ## CRUDのAPI作成
 
-最後に`API Platform`を使って、単純なCURDのAPIを作成します。
+最後に`API Platform`の機能を使って、単純なCURDのAPIを作成します。
 最も単純なパターンは以下に2箇所コードを追記するだけです。
 
 ```diff php:src/Entity/Book.php
@@ -320,9 +324,9 @@ mysql> select * from book;
 
 # おわりに
 
-とりあえず、`Entity`に対してCRUDのAPIを作成できました。
+`Book`エンティティに対してCRUDのAPIを作成しました。
 ただ、これだけだとORMと合わせて利用する必要があり、APIとしては少し扱いにくいです。
-次以降の記事で`API Platform`の機能を利用してAPIを作成していきます。
+これから`API Platform`の機能を利用してAPIを作成していきたいです。
 
 # 参考文献
 
