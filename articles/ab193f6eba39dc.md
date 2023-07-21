@@ -3,7 +3,7 @@ title: "Symfony+API Platformを動かしてみた"
 emoji: "🎣"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["php", "symfony", "apiplatform"]
-published: false
+published: true
 ---
 
 # はじめに
