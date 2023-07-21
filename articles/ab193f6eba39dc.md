@@ -1,5 +1,5 @@
 ---
-title: "DockerでPHPのSymfonyを立ててAPI Platformを動かすまで"
+title: "Symfony+API Platformを動かしてみた"
 emoji: "🎣"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["php", "symfony", "apiplatform"]
@@ -10,20 +10,141 @@ published: false
 
 本記事では、`PHP + Symfony + API Platform`を`Docker`上で実行することを目指します。
 
+::: message
+この記事を書き終えたタイミングで
+https://zenn.dev/ttskch/books/a3800fc0912fbb/viewer/1
+というめっちゃ良いZenn Bookを見つけてしまいました。
+API Platformのバージョンもちょっと違うのと、Dockerも使っていなさそうなので、
+差別化できているということで・・・。
+
+「Chapter 01 はじめに」は、API Platformの立ち位置なども書かれており、すごく有益です！
+:::
+
 # 環境・バージョン
 
 - ローカル環境
   - macOS Ventura 13.4.1(c)
 - Docker環境
   - PHP: 8.2
-  - Symfony: 5.5系
+    - Symfony: 5.5系
+    - api-platform: 3.1
   - mysql: 8.0
 
-# 立ち上げからAPI実行まで
+# コンテナ立ち上げからAPI実行まで
 
 ## コード
 
 本記事のコードは[GitHub](https://github.com/gsy0911/zenn-php-symfony/tree/article1)にありますので、適宜確認ください。
+
+## ディレクトリ構成とDockerfile
+
+ディレクトリ構成は次のようになっています。
+
+```text
+.
+├── backend
+│  └── src 👈 PHPのプロジェクトのディレクトリ（最初は空っぽ）
+├── docker
+│  ├── nginx
+│  │  ├── default.conf
+│  │  └── Dockerfile
+│  └── php
+│     ├── Dockerfile
+│     └── php.ini
+└── docker-compose.yaml
+```
+
+PHPのDockerfileは以下のように作成しました。
+本記事では利用しないパッケージもこのタイミングでインストールしています。
+
+::: message
+検索しても、あまり書き方が統一されていないのと
+Symfony公式のDockerfileは扱いづらそうだったので一旦参考記事を元にしています。
+よくない箇所があればコメントください。
+:::
+
+```Dockerfile: docker/php/Dockerfile
+FROM php:8.2-fpm
+
+COPY php.ini /usr/local/etc/php/conf.d/docker-php-config.ini
+
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    g++ \
+    procps \
+    openssl \
+    git \
+    unzip \
+    zlib1g-dev \
+    libzip-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libicu-dev  \
+    libonig-dev \
+    libxslt1-dev \
+    acl
+
+RUN pecl install apcu redis
+RUN docker-php-ext-enable apcu
+RUN docker-php-ext-enable redis
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype
+RUN docker-php-ext-install pdo pdo_mysql zip xsl gd intl opcache exif mbstring
+
+WORKDIR /var/www/zenn_example
+
+# php extensions installer: https://github.com/mlocati/docker-php-extension-installer
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+RUN curl -sS https://get.symfony.com/cli/installer | bash
+RUN mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+```
+
+PHPのDockerfileを利用している、`docker-compose.yaml`ファイルです。
+特段変わったことはしていないかと思います。
+
+```yaml: docker-compose.yaml
+version: "3.8"
+
+services:
+  
+  php:
+    build:
+      context: docker/php
+    container_name: zenn-php-symfony
+    restart: unless-stopped
+    volumes:
+      - ./backend/src:/var/www/zenn_example
+    healthcheck:
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  nginx:
+    build:
+      context: docker/nginx
+    container_name: zenn-nginx-symfony
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend/src:/var/www/zenn_example
+    depends_on:
+      - php
+
+  mysql:
+    image: mysql:8.0
+    container_name: zenn-mysql-symfony
+    volumes:
+      - ./volumes/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: zenn_example
+      MYSQL_USER: symfony
+      MYSQL_PASSWORD: symfony
+```
+
+その他のファイルについては、[GitHub](https://github.com/gsy0911/zenn-php-symfony/tree/article1)を参照してください。
 
 ## 立ち上げ
 
@@ -34,7 +155,7 @@ $ docker compose up --build
 $ docker compose exec -it php /bin/bash
 ```
 
-## 初期化とパッケージなどのインストール
+## 初期化とパッケージのインストール
 
 ここからは全てコンテナ内での操作です。
 インストールされている`Symfony`のバージョンを確認します。
@@ -325,7 +446,7 @@ mysql> select * from book;
 # おわりに
 
 `Book`エンティティに対してCRUDのAPIを作成しました。
-ただ、これだけだとORMと合わせて利用する必要があり、APIとしては少し扱いにくいです。
+ただ、これだけだとORMと合わせての利用なので、APIとしては少し扱いにくいです。
 これから`API Platform`の機能を利用してAPIを作成していきたいです。
 
 # 参考文献
@@ -336,4 +457,4 @@ mysql> select * from book;
 - [Let's EncryptでHTTPSを終端させたいだけならNginxよりCaddyを使うと楽だった件](https://qiita.com/ssc-ksaitou/items/ee0cda84dcf358a2b5eb)
 - [nginx と PHP-FPM の仕組みをちゃんと理解しながら PHP の実行環境を構築する](https://qiita.com/kotarella1110/items/634f6fafeb33ae0f51dc)
 - [Docker ComposeとSymfonyを使って開発してみよう](https://www.twilio.com/ja/blog/get-started-docker-symfony-jp)
-
+- [symfony-docker/.docker/php/Dockerfile](https://github.com/ger86/symfony-docker/blob/master/.docker/php/Dockerfile)
