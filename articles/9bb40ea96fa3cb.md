@@ -21,7 +21,7 @@ AWSが公式に、動的に様々なサイズの画像を作成・配信する�
 
 ![](https://storage.googleapis.com/zenn-user-upload/22a860c7d9a7-20230621.png =600x)
 
-1. サーバーに`https://your.domain.com/images/some_file.jpg?w=200&h=200` でアクセスし、S3へは`/images/some_file.jpg?w=200&h=200`というURIを取得しに行く
+1. サーバーに`https://your.domain.com/images/some_file.jpg?w=1280&h=960` でアクセスし、S3へは`/images/some_file.jpg?w=1280&h=960`というURIを取得しに行く
 2. `Lambda@Edge`にてURIが`/images/w=1280&h=960&quality=50&ext=webp&fit=inside/webp/some_file.jpg` に変換される
 3. 変換されたURIでS3にアクセスする
 4. S3にファイルが存在した場合6.に飛び、存在しない場合は5.の処理を実施する
