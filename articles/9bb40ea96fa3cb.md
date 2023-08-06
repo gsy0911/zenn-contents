@@ -509,10 +509,10 @@ exports.handler = (event, context, callback) => {
 ### デプロイに必要なパラメータの付与
 
 デプロイの前にパラメータの設定を行います。
-`infra/`に保存されている`paramsExample.ts`をコピーして`params.ts`を作成します。
+`infrastructure/lib/`に保存されている`paramsExample.ts`をコピーして`params.ts`を作成します。
 
 ```shell
-$ cd infrastructure
+$ cd infrastructure/lib
 $ cp paramsExample.ts params.ts
 ```
 
