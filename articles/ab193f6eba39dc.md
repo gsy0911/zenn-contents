@@ -26,7 +26,7 @@ API Platformのバージョンもちょっと違うのと、Dockerも使って�
   - macOS Ventura 13.4.1(c)
 - Docker環境
   - PHP: 8.2
-    - Symfony: 5.5系
+    - Symfony: 6.3系
     - api-platform: 3.1
   - mysql: 8.0
 
