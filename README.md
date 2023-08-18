@@ -20,6 +20,7 @@
 | CDKでAWS Batch環境を作成する                              | [b095186292cbab](./articles/b095186292cbab.md)             | [LINK](https://zenn.dev/gsy0911/articles/b095186292cbab)       |
 | Symfony+API Platformを動かしてみた                       | [ab193f6eba39dc](./articles/ab193f6eba39dc.md)             | [LINK](https://zenn.dev/gsy0911/articles/ab193f6eba39dc)       |
 | Rechartsで株式のグラフを書く                                | [2dbef4311d787f](./articles/2dbef4311d787f.md)             | [LINK](https://zenn.dev/gsy0911/articles/2dbef4311d787f)       |
+| DockerでMySQLのMaster/Slave構成                       | [2287b8aa75d706](./articles/2287b8aa75d706.md)             | [LINK](https://zenn.dev/gsy0911/articles/2287b8aa75d706)       |
 
 # references
 
