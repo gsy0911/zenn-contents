@@ -21,6 +21,7 @@
 | Symfony+API Platformを動かしてみた                       | [ab193f6eba39dc](./articles/ab193f6eba39dc.md)             | [LINK](https://zenn.dev/gsy0911/articles/ab193f6eba39dc)       |
 | Rechartsで株式のグラフを書く                                | [2dbef4311d787f](./articles/2dbef4311d787f.md)             | [LINK](https://zenn.dev/gsy0911/articles/2dbef4311d787f)       |
 | DockerでMySQLのMaster/Slave構成                       | [2287b8aa75d706](./articles/2287b8aa75d706.md)             | [LINK](https://zenn.dev/gsy0911/articles/2287b8aa75d706)       |
+| DoctrineでMySQLのMaster/Slaveを構築する                  | [66d185f9bf80f9](./articles/66d185f9bf80f9.md)             | [LINK](https://zenn.dev/gsy0911/articles/66d185f9bf80f9)       |
 
 # references
 
