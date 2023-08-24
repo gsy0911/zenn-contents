@@ -22,6 +22,7 @@
 | Rechartsで株式のグラフを書く                                | [2dbef4311d787f](./articles/2dbef4311d787f.md)             | [LINK](https://zenn.dev/gsy0911/articles/2dbef4311d787f)       |
 | DockerでMySQLのMaster/Slave構成                       | [2287b8aa75d706](./articles/2287b8aa75d706.md)             | [LINK](https://zenn.dev/gsy0911/articles/2287b8aa75d706)       |
 | DoctrineでMySQLのMaster/Slaveを構築する                  | [66d185f9bf80f9](./articles/66d185f9bf80f9.md)             | [LINK](https://zenn.dev/gsy0911/articles/66d185f9bf80f9)       |
+| Next.jsでaxiosへの型付けとエディタ補完をする                      | [6e5cab839b09a2](./articles/6e5cab839b09a2.md)             | [LINK](https://zenn.dev/gsy0911/articles/6e5cab839b09a2)       |
 
 # references
 
