@@ -24,6 +24,7 @@
 | DoctrineでMySQLのMaster/Slaveを構築する                                  | [66d185f9bf80f9](./articles/66d185f9bf80f9.md)             | [LINK](https://zenn.dev/gsy0911/articles/66d185f9bf80f9)       |
 | Next.jsでaxiosへの型付けとエディタ補完をする                                      | [6e5cab839b09a2](./articles/6e5cab839b09a2.md)             | [LINK](https://zenn.dev/gsy0911/articles/6e5cab839b09a2)       |
 | 【NextAuth.js】cognitoで複数のサードパーティのIDプロバイダーを使った時に直接ソーシャルログインの画面に遷移する | [a05630a55d8e29](./articles/a05630a55d8e29.md)             | [LINK](https://zenn.dev/gsy0911/articles/a05630a55d8e29)       |
+| 【NextAuth.js】Cognitoでカスタムサインインページを作成する                            | [0e271401b8e5c2](./articles/0e271401b8e5c2.md)             | [LINK](https://zenn.dev/gsy0911/articles/0e271401b8e5c2)       |
 
 # references
 
