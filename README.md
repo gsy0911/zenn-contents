@@ -27,6 +27,7 @@
 | 【NextAuth.js】Cognitoでカスタムサインインページを作成する                            | [0e271401b8e5c2](./articles/0e271401b8e5c2.md)             | [LINK](https://zenn.dev/gsy0911/articles/0e271401b8e5c2)       |
 | IdTokenからIAM認証されたAPI Gatewayにアクセスする                               | [5f3290ca3a54ce](./articles/5f3290ca3a54ce.md)             | [LINK](https://zenn.dev/gsy0911/articles/5f3290ca3a54ce)       |
 | IdTokenから取得したIdentityId別にS3バケットのアクセス許可を付与する                       | [bd26af3a69ee40](./articles/bd26af3a69ee40.md)             | [LINK](https://zenn.dev/gsy0911/articles/bd26af3a69ee40)       |
+| Amazon Bedrockのclaude-v2をboto3から実行してみた                            | [a0a362083c276a](./articles/a0a362083c276a.md)             | [LINK](https://zenn.dev/gsy0911/articles/a0a362083c276a)       |
 
 # references
 
