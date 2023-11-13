@@ -28,6 +28,7 @@
 | IdTokenからIAM認証されたAPI Gatewayにアクセスする                               | [5f3290ca3a54ce](./articles/5f3290ca3a54ce.md)             | [LINK](https://zenn.dev/gsy0911/articles/5f3290ca3a54ce)       |
 | IdTokenから取得したIdentityId別にS3バケットのアクセス許可を付与する                       | [bd26af3a69ee40](./articles/bd26af3a69ee40.md)             | [LINK](https://zenn.dev/gsy0911/articles/bd26af3a69ee40)       |
 | Amazon Bedrockのclaude-v2をboto3から実行してみた                            | [a0a362083c276a](./articles/a0a362083c276a.md)             | [LINK](https://zenn.dev/gsy0911/articles/a0a362083c276a)       |
+| 【NextAuth.js】Next.jsのPages RouterをCloudFrontとAPI Gatewayで稼働させる    | [9bddce24f45a09](./articles/9bddce24f45a09.md)             | [LINK](https://zenn.dev/gsy0911/articles/9bddce24f45a09)       |
 
 # references
 
