@@ -14,12 +14,12 @@ topics: ["nextauth", "nextjs", "cognito", "awscdk"]
 
 ## デプロイ環境
 
-- macOS: 13.5
+- macOS: 14.1
 - MySQL: 8.0
 - Next.js: 13.4
 - Node.js: 18.16
-- AWS CDK: 2.85.0
-- Mantine: 6.0.20
+- AWS CDK: 2.106.0
+- Mantine: 7.2.2
 
 ## 動作サンプル
 
