@@ -16,17 +16,18 @@ CDKでCognitoの管理をします。
 
 - Cognitoのユーザープール、IDプールとそれに関連するCognitoのグループ、アプリクライアント、IDプールと紐づくIAMロールの管理をCDKを用いて実施する。
 - ユーザープールは固定した状態で、アプリクライアント・Cognitoグループ・IAMロールが増えていくようなサービス
+- 前提は、単一のユーザープールに複数のサービスを紐付けて管理すること
 
 ## 構成
 
 ちなみに過去の構成
-拙作などでは、1つのStackにまとめて定義していましたが、大変です。
+拙作などでは、1つのファイルのStackにまとめて定義していました。
 
 https://zenn.dev/gsy0911/articles/bd26af3a69ee40
 
-図でCDKの管理している状態を表すと以下のようになります。
+上記の記事でCDKの状態を表すと以下のようになります。
 
-このままだとコードも多くなって関連が読みづらくなったり、修正がしづらくなったりすることが考えられます。
+このままだと単一ファイルのコードが多くなって読みづらくなります。
 
 ## デプロイ環境
 
@@ -69,7 +70,7 @@ https://github.com/gsy0911/zenn-nextjs-authjs-cognito/tree/v5.0
 
 ### Constructs
 
-Cognitoのユーザープールを作成するConstructです。ユーザープールを作成して、外部から参照できるように`userPool`という変数を持っています。
+Cognitoのユーザープールを作成するConstructの`class Authentication`です。ユーザープールを作成して、外部から参照できるように`userPool`という変数を持っています。
 
 
 ちなみに以下の記事を参考にして、CDKのidは全てパスカルケースにしています。
@@ -146,8 +147,9 @@ export class Authentication extends Construct {
 }
 ```
 
-次はIDプールを作成するコンストラクトです。
-初回デプロイ時にはあまり意味を成さないコンストラクトになっていますが、次に紹介するCognitoグループとIAMロールとを紐づけるようになると、ロールの紐付けなどを隠蔽するようにしたコンストラクトです。
+次はIDプールを作成するコンストラクト`class Authorization`です。
+初回デプロイ時には、IDプールのみを生成するだけのあまり意味を成さないコンストラクトになっています。
+次に紹介するコンストラクト`class AuthorizationGroupAndRole`と併せて利用すると、ロールの紐付けなどをするコンストラクトになっています。
 
 ```typescript: lib/constructs/authorization.ts（一部）
 import { aws_cognito, aws_iam } from "aws-cdk-lib";
@@ -190,12 +192,17 @@ export class Authorization extends Construct {
 （後略）
 ```
 
-最後に本記事で一番重要なコンストラクトを紹介します。
-クライアントの説明。
-どうしてこのような方法を採ったのか。
-ロールマッピングの説明など。
+最後に本記事で一番重要なコンストラクト`class AuthorizationGroupAndRole`の説明をします。
+このコンストラクトは単一のサービスのアプリクライアントとCognitoグループ・IAMロールをまとめて作成しています。
+これまで出てきた`class Authentication`と`class Authorization`はStackのなかで1回だけ生成される想定ですが、このコンストラクトはサービスの個数に合わせて生成することを想定しています。
 
+最初にプライベートクライアントの説明。`${servicePrefix}-PrivateClient`のIDを付与している理由。
+
+
+ロールマッピングの説明など。
 付与しているポリシーの説明と背景。
+
+どうしてこのような方法を採ったのか。
 
 
 ```typescript: lib/constructs/authorization.ts（一部）
@@ -340,7 +347,6 @@ export class AuthorizationGroupAndRole extends Construct {
       mappedRole: adminRole,
       matchType: RoleMappingMatchType.CONTAINS,
     };
-
     const userRMR: RoleMappingRule = {
       claim: "cognito:groups",
       claimValue: "user",
