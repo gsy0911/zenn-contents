@@ -449,6 +449,14 @@ mysql> select * from book;
 ただ、これだけだとORMと合わせての利用なので、APIとしては少し扱いにくいです。
 これから`API Platform`の機能を利用してAPIを作成していきたいです。
 
+::: message
+追記：API Platformで更新処理などをしてみました！
+以下の記事を是非ご覧ください〜！
+:::
+
+https://zenn.dev/gsy0911/articles/8c1eaef195c857
+
+
 # 参考文献
 
 - [The Fast Track - 基礎から最速で学ぶ Symfony 入門](https://symfony.com/doc/5.4/the-fast-track/ja/index.html)
