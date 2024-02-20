@@ -9,8 +9,8 @@ published: false
 # はじめに
 
 
-Cognitoのサービスを触っていると、コンソールから変更してしまってそのままのようなことも多いかと思います。
-コンソールから変更しても困らない場合は問題ないのですが、ステージング環境や本番環境をちゃんと分離しているようなサービスではなるべくコードで管理することが望ましいです。
+Cognitoを触っていると、コンソールから変更してしまってそのままのようなことも多いかと思います。コンソールから変更しても困らない場合は問題ないのですが、ステージング環境や本番環境をちゃんと分離しているようなアプリではなるべくコードで管理することが望ましいです。
+
 そのため、本記事ではCDKでCognitoの管理をすることを目指します。
 
 
@@ -18,17 +18,18 @@ Cognitoのサービスを触っていると、コンソールから変更して�
 
 背景・やりたいこと・目的は以下の通りです。
 
-- 【背景】サービスの前提
-  - 単一のユーザープールに複数のサービスを紐付けて管理する
-  - サービスが増えるに合わせてアプリクライアント・Cognitoグループ・IAMロールが増えていく
-- 【やりたいこと】以下のCognitoのサービスをCDKで管理する
+- 【背景】サービス/アプリの前提
+  - 単一のユーザープールに複数のアプリを紐付けて管理する
+  - アプリが増えるにつれてアプリクライアント・Cognitoグループ・IAMロールが増える
+- 【やりたいこと】以下のCognitoのリソースをCDKで管理する
   - Cognitoのユーザープール（Cognitoのグループ・アプリクライアント）
   - IDプール
   - IAMロール
 - 【目的】
-  - サービスを追加した場合でも修正・管理しやすい状態を保つこと
+  - アプリを追加した場合でも修正・管理しやすい状態を保つこと
 
-（サービスの前提の図）
+![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_5.png =600x)
+*AWSリソースへのアクセス権を持つような複数のアプリを追加するようなサービス*
 
 ## 構成
 
@@ -36,16 +37,15 @@ Cognitoのサービスを触っていると、コンソールから変更して�
 
 https://zenn.dev/gsy0911/articles/bd26af3a69ee40
 
-上記の記事でCDKの状態を表すと以下のようになります。
-このままだと単一ファイルのコードが多くなって修正・管理づらくなります。
+上記の記事でCDKの状態を表すと以下のようになります。このままだと単一ファイルのコードが多くなって修正・管理づらくなります。
 
 ![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_1.png =600x)
-*単一のStackに、複数のAWSサービスが管理されている*
+*単一のStackに、複数のAWSリソースが管理されている*
 
-そのため、CDKのConstructを用いてサービスの追加をしやすいように修正します。
+そのため、CDKのConstructを用いてアプリの追加・管理をしやすいように修正します。
 
 ![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_2.png =600x)
-*単一のStackではあるが、複数のAWSサービスがコンストラクトを1つの単位としてまとめられている*
+*単一のStackではあるが、複数のAWSリソースがコンストラクトを1つの単位としてまとめられている*
 
 ## デプロイ環境
 
@@ -78,7 +78,7 @@ https://github.com/gsy0911/zenn-nextjs-authjs-cognito/tree/v5.0
 │  ├── constructs
 │  │  ├── authentication.ts 👈 ユーザープールのConstruct
 │  │  ├── authorization.ts 👈 IDプールのConstruct / Cognitoグループなどをまとめて管理するConstruct
-│  │  └── common.ts 👈定数や共通のインターフェース
+│  │  └── common.ts
 │  ├── index.ts
 │  └── paramsExample.ts 👈 デプロイに必要なパラメータのサンプルファイル
 ├── package-lock.json
@@ -166,8 +166,8 @@ export class Authentication extends Construct {
 ```
 
 次はIDプールを作成するコンストラクト`class Authorization`です。
-初回デプロイ時には、IDプールのみを生成するだけのあまり意味を成さないコンストラクトになっています。
-次に紹介するコンストラクト`class AuthorizationGroupAndRole`と併せて利用すると、ロールの紐付けなどをするコンストラクトになっています。
+
+初回デプロイ時には、IDプールのみを生成するだけのあまり意味を成さないコンストラクトになっています。次に紹介するコンストラクト`class AuthorizationGroupAndRole`と併せて利用すると、ロールの紐付けなどをするコンストラクトになっています。
 
 ```typescript: lib/constructs/authorization.ts（一部）
 import { aws_cognito, aws_iam } from "aws-cdk-lib";
@@ -210,18 +210,15 @@ export class Authorization extends Construct {
 （後略）
 ```
 
-最後に本記事で一番重要なコンストラクト`class AuthorizationGroupAndRole`の説明をします。
-このコンストラクトは単一のサービスのアプリクライアントとCognitoグループ・IAMロールをまとめて作成しています。
-これまで出てきた`class Authentication`と`class Authorization`はStackのなかで1回だけ生成される想定ですが、このコンストラクトはサービスの個数に合わせて生成することを想定しています。
+最後に本記事で一番重要なコンストラクト`class AuthorizationGroupAndRole`の説明をします。このコンストラクトは単一のアプリのアプリクライアントとCognitoグループ・IAMロールをまとめて作成しています。これまで出てきた`class Authentication`と`class Authorization`はStackのなかで1回だけ生成される想定ですが、このコンストラクトは追加するアプリの個数に合わせて生成することを想定しています。
 
-最初にプライベートクライアントの説明。`${servicePrefix}-PrivateClient`のIDを付与している理由。
+プライベートクライアントは追加したアプリごとに利用する想定です。`${servicePrefix}-PrivateClient`のIDを付与している理由は、2回以上`class AuthorizationGroupAndRole`のコンストラクを利用すると、IDが重複してデプロイできないためです。
 
+付与しているポリシーは、API Gatewayへの特定のリソースへのアクセスと、S3の特定のディレクトリ以下のみアクセスを付与する権限になっています。アクセスを許可しているリソースなどは[前回の記事](https://zenn.dev/gsy0911/articles/5f3290ca3a54ce)などをそのまま流用しています。
 
-ロールマッピングの説明など。
-付与しているポリシーの説明と背景。
-
-どうしてこのような方法を採ったのか。
-
+::: message
+API GatewayへS3へのアクセスを許可するポリシーを付与していますが、サービス/アプリの形態に合わせて変更して読んでください。`admin`と`user`のグループ・ポリシーに関しても同様です。
+:::
 
 ```typescript: lib/constructs/authorization.ts（一部）
 （前略）
@@ -384,7 +381,7 @@ export class AuthorizationGroupAndRole extends Construct {
       useToken: false,
       mappingKey: servicePrefix,
       resolveAmbiguousRoles: false,
-      // 新しいサービスを追加する場合は、ここにmappingを追加すること
+      // 新しいアプリを追加する場合は、ここにmappingを追加すること
       rules: [adminRMR, userRMR],
     };
   }
@@ -395,7 +392,10 @@ export class AuthorizationGroupAndRole extends Construct {
 
 ### ユーザープールとIDプールを作成したStackをデプロイ
 
-どうして分けて2回デプロイする必要があるのか
+最初に、ユーザープールとIDプールのみを記述したStackをデプロイします。デプロイを2回に分ける必要があり、まずコンストラクトの`class Authentication`と`class Authorization`をデプロイします。2回に分けてデプロイする理由は後述します。
+
+![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_3.png =600x)
+*以下のAuthStackをデプロイすると作成されるAWSリソース*
 
 
 ```typescript: lib/auth-stack.ts（1回目のデプロイ時）
@@ -407,10 +407,10 @@ import { Authorization, AuthorizationGroupAndRole } from "./constructs/authoriza
 
 export interface AuthStackProps {
   domainPrefix: string;
+  idPoolId: `ap-northeast-1:${string}`;
   app1: {
     apigwId: string;
     s3Bucket: string;
-    idPoolId: `ap-northeast-1:${string}`;
   };
 }
 
@@ -434,6 +434,7 @@ export class AuthStack extends Stack {
     new Authorization(this, "Authorization", {
       environment,
       servicePrefix,
+      // 以下の`userPools`と`roleMappings`は[]でOK
       userPools: [],
       roleMappings: [],
     });
@@ -441,9 +442,25 @@ export class AuthStack extends Stack {
 }
 ```
 
+上記のStackを以下のコマンドで1回目のデプロイします。
+
+```shell
+$ cdk deploy zenn-example-auth
+```
 
 
 ### CognitoのグループやIAMロールを追加したStackのデプロイ
+
+次に、2回目のデプロイを実施し、CognitoのグループやIAMロールを作成します。2回に分けてデプロイするのは2つの理由があります。どちらもデプロイ時のリソースの有無によって起こるエラーを回避するためです。
+
+1つ目は、Cognitoのユーザープールが存在しないとアプリクライアントの作成ができないためです。これは依存関係を追加してあげれば解決しそうなのですが2つ目の理由はどうしても回避できないためこのままの状態にしています。
+
+2つ目は、IDプールのidである`idPoolId`が`class AuthorizationGroupAndRole`の引数に必要なのですが、IDプール作成後にしか取得できないためです。加えて、`class Authorization`の引数に`class AuthorizationGroupAndRole`の結果が必要という循環参照が発生しているため2回デプロイしています。
+
+このStackをデプロイすると以下の図のようになります。
+
+![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_2.png =600x)
+*（再掲）*
 
 
 ```diff typescript: lib/auth-stack.ts（2回目のデプロイ時）
@@ -455,10 +472,10 @@ import { Authorization, AuthorizationGroupAndRole } from "./constructs/authoriza
 
 export interface AuthStackProps {
   domainPrefix: string;
+  idPoolId: `ap-northeast-1:${string}`;
   app1: {
     apigwId: string;
     s3Bucket: string;
-    idPoolId: `ap-northeast-1:${string}`;
   };
 }
 
@@ -501,7 +518,7 @@ export class AuthStack extends Stack {
 +       adminRoleResources: app1AdminOnlyResource(params.app1.apigwId),
 +       userRoleResources: app1UserOnlyResource(params.app1.apigwId),
 +       s3Bucket: params.app1.s3Bucket,
-+       idPoolId: params.app1.idPoolId,
++       idPoolId: params.idPoolId,
 +     },
 +   });
 
@@ -516,9 +533,128 @@ export class AuthStack extends Stack {
 }
 ```
 
+上記のStackを以下のコマンドで2回目のデプロイします。このコマンドを実行することで完了です。
+
+```shell
+$ cdk deploy zenn-example-auth
+```
+
+
+### 別のアプリを追加した場合のStackのデプロイ
+
+
+アプリを増やす場合のコードは以下のようになります。
+
+```diff typescript: lib/auth-stack.ts（2つのアプリをデプロイする時）
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Construct } from "constructs";
+
+import { Authentication } from "./constructs/authentication";
+import { Authorization, AuthorizationGroupAndRole } from "./constructs/authorization";
+
+export interface AuthStackProps {
+  domainPrefix: string;
+  idPoolId: `ap-northeast-1:${string}`;
+  app1: {
+    apigwId: string;
+    s3Bucket: string;
+  };
++ app2: {
++   apigwId: string;
++   s3Bucket: string;
++ };
+}
+
+export class AuthStack extends Stack {
+  constructor(scope: Construct, id: string, params: AuthStackProps, props: StackProps) {
+    super(scope, id, props);
+
+    const { domainPrefix } = params;
+    const servicePrefix = "zenn-nextjs-authjs-cognito";
+    const environment = "prod";
+    const accountId = Stack.of(this).account;
+
+    // 1: 認証
+    const authentication = new Authentication(this, "Authentication", {
+      environment,
+      servicePrefix,
+      domainPrefix,
+    });
+
+    // アプリ1
+    const app1AdminOnlyResource = (apigwRestApiId: string): string[] => {
+      return [
+        `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/admin`,
+        `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/read-file`,
+      ];
+    };
+    const app1UserOnlyResource = (apigwRestApiId: string): string[] => {
+      return [
+        `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/user`,
+        `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/read-file`,
+      ];
+    };
+    const app1Groups = new AuthorizationGroupAndRole(this, "App1", {
+      environment,
+      servicePrefix,
+      userPool: authentication.userPool,
+      callbackUrls: ["https://localhost:3000/api/auth/callback/cognito"],
+      logoutUrls: ["https://localhost:3000"],
+      idPool: {
+        adminRoleResources: app1AdminOnlyResource(params.app1.apigwId),
+        userRoleResources: app1UserOnlyResource(params.app1.apigwId),
+        s3Bucket: params.app1.s3Bucket,
+        idPoolId: params.idPoolId,
+      },
+    });
+
++   // アプリ2
++   const app2AdminOnlyResource = (apigwRestApiId: string): string[] => {
++     return [
++       `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/admin`,
++       `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/read-file`,
++     ];
++   };
++   const app2UserOnlyResource = (apigwRestApiId: string): string[] => {
++     return [
++       `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/user`,
++       `arn:aws:execute-api:ap-northeast-1:${accountId}:${apigwRestApiId}/v1/GET/read-file`,
++     ];
++   };
++   const app2Groups = new AuthorizationGroupAndRole(this, "App2", {
++     environment,
++     servicePrefix: "app2",
++     userPool: authentication.userPool,
++     callbackUrls: ["https://localhost:3000/api/auth/callback/cognito"],
++     logoutUrls: ["https://localhost:3000"],
++     idPool: {
++       adminRoleResources: app2AdminOnlyResource(params.app2.apigwId),
++       userRoleResources: app2UserOnlyResource(params.app2.apigwId),
++       s3Bucket: params.app2.s3Bucket,
++       idPoolId: params.idPoolId,
++     },
++   });
+
+    // 2: 認可
+    new Authorization(this, "Authorization", {
+      environment,
+      servicePrefix,
++     userPools: [app1Groups.userPool, app2Groups.userPool],
++     roleMappings: [app1Groups.roleMapping, app2Groups.roleMapping],
+    });
+  }
+}
+```
+
+このStackをデプロイすると以下のAWSリソースの状態になります。
+
+![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_4.png =600x)
+*2つのアプリを追加した状態*
+
+
 ## 動作確認
 
-動作確認は拙作の以下の記事などをご覧ください。
+IAMロールなどの動作確認は、本記事では実施しません。以下の記事などをご覧ください。
 
 - API Gatewayの認可の動作確認
 
@@ -531,8 +667,6 @@ https://zenn.dev/gsy0911/articles/bd26af3a69ee40#%E5%8B%95%E4%BD%9C%E7%A2%BA%E8%
 
 # おわりに
 
-IDプールとIAMロールの紐付けの関係上、コードを修正しての2回のデプロイが必要になってしまいます。
-デプロイが2回必要な点は微妙だと思いますが、CognitoのグループやIAMロールは増やしやすい構成になったと思います。
-（もし、2回デプロイしなくてもいい方法があればコメントで教えてもらえると嬉しいです。）
+IDプールとIAMロールの紐付けの関係上、Stackを修正して2回のデプロイが必要になってしまいます。デプロイが2回必要な点は微妙だと思いますが、CognitoのグループやIAMロールは増やしやすい構成になったと思います。（もし、2回デプロイしなくてもいい方法があればコメントで教えてもらえると嬉しいです。）
 
 また、現時点ではAPI GatewayとS3への認可を使ったアクセス制御をしましたが、DynamoDBでも細かく制御ができるみたいなのでそれに関しても触ってみたいです。
