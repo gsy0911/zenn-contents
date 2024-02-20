@@ -9,7 +9,7 @@ published: false
 # はじめに
 
 
-Cognitoを触っていると、コンソールから変更してしまってそのままのようなことも多いかと思います。コンソールから変更しても困らない場合は問題ないのですが、ステージング環境や本番環境をちゃんと分離しているようなアプリではなるべくコードで管理することが望ましいです。
+Cognitoを触っていると、コンソールから変更してそのままなことも多いかと思います。コンソールから変更しても問題ない場合はいいのですが、ステージング環境や本番環境をちゃんと分離しているようなアプリではなるべくコードで管理することが望ましいです。
 
 そのため、本記事ではCDKでCognitoの管理をすることを目指します。
 
@@ -20,11 +20,13 @@ Cognitoを触っていると、コンソールから変更してしまってそ�
 
 - 【背景】サービス/アプリの前提
   - 単一のユーザープールに複数のアプリを紐付けて管理する
+    - アプリごとにユーザープールとIDプールを管理するのが煩雑・または意図を持って同じユーザープールとIDプールを使いたい
   - アプリが増えるにつれてアプリクライアント・Cognitoグループ・IAMロールが増える
-- 【やりたいこと】以下のCognitoのリソースをCDKで管理する
-  - Cognitoのユーザープール（Cognitoのグループ・アプリクライアント）
-  - IDプール
-  - IAMロール
+- 【やりたいこと】
+  - 以下のCognitoのリソースをCDKで管理する
+    - Cognitoのユーザープール（Cognitoのグループ・アプリクライアント）
+    - IDプール
+    - IAMロール
 - 【目的】
   - アプリを追加した場合でも修正・管理しやすい状態を保つこと
 
@@ -37,7 +39,7 @@ Cognitoを触っていると、コンソールから変更してしまってそ�
 
 https://zenn.dev/gsy0911/articles/bd26af3a69ee40
 
-上記の記事でCDKの状態を表すと以下のようになります。このままだと単一ファイルのコードが多くなって修正・管理づらくなります。
+上記の記事のCDKの以下のような状態になります。これだと単一ファイルのコードが多くなって修正・管理づらく、特にアプリを追加したい場合は大変です。
 
 ![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_1.png =600x)
 *単一のStackに、複数のAWSリソースが管理されている*
@@ -49,7 +51,7 @@ https://zenn.dev/gsy0911/articles/bd26af3a69ee40
 
 ## デプロイ環境
 
-環境は以下のようになります。
+デプロイを実施した環境は以下のようになります。
 
 - macOS: 14.2
 - Node.js: 20.11.0
@@ -88,8 +90,7 @@ https://github.com/gsy0911/zenn-nextjs-authjs-cognito/tree/v5.0
 
 ### Constructs
 
-Cognitoのユーザープールを作成するConstructの`class Authentication`です。ユーザープールを作成して、外部から参照できるように`userPool`という変数を持っています。
-
+まずはCognitoのユーザープールを作成するConstructの`class Authentication`です。ユーザープールを作成して、外部から参照できるように`userPool`という変数を持っています。
 
 ちなみに以下の記事を参考にして、CDKのidは全てパスカルケースにしています。
 https://qiita.com/tmokmss/items/721a99e9a62499d6d54a
@@ -167,7 +168,7 @@ export class Authentication extends Construct {
 
 次はIDプールを作成するコンストラクト`class Authorization`です。
 
-初回デプロイ時には、IDプールのみを生成するだけのあまり意味を成さないコンストラクトになっています。次に紹介するコンストラクト`class AuthorizationGroupAndRole`と併せて利用すると、ロールの紐付けなどをするコンストラクトになっています。
+初回デプロイ時には、IDプールのみを生成するだけのあまり意味を成さないコンストラクトになっています。次に紹介するコンストラクト`class AuthorizationGroupAndRole`と併用すると、IAMロールの紐付けなどができ意味が出てくるコンストラクトになっています。
 
 ```typescript: lib/constructs/authorization.ts（一部）
 import { aws_cognito, aws_iam } from "aws-cdk-lib";
@@ -210,7 +211,7 @@ export class Authorization extends Construct {
 （後略）
 ```
 
-最後に本記事で一番重要なコンストラクト`class AuthorizationGroupAndRole`の説明をします。このコンストラクトは単一のアプリのアプリクライアントとCognitoグループ・IAMロールをまとめて作成しています。これまで出てきた`class Authentication`と`class Authorization`はStackのなかで1回だけ生成される想定ですが、このコンストラクトは追加するアプリの個数に合わせて生成することを想定しています。
+最後に本記事で一番重要なコンストラクト`class AuthorizationGroupAndRole`の説明をします。このコンストラクトはあるアプリのアプリクライアントとCognitoグループ・IAMロールをまとめて作成しています。これまで出てきた`class Authentication`と`class Authorization`はStackの中で1回だけ生成される想定ですが、このコンストラクトは追加するアプリの個数に合わせて生成することを想定しています。
 
 プライベートクライアントは追加したアプリごとに利用する想定です。`${servicePrefix}-PrivateClient`のIDを付与している理由は、2回以上`class AuthorizationGroupAndRole`のコンストラクを利用すると、IDが重複してデプロイできないためです。
 
@@ -392,7 +393,7 @@ export class AuthorizationGroupAndRole extends Construct {
 
 ### ユーザープールとIDプールを作成したStackをデプロイ
 
-最初に、ユーザープールとIDプールのみを記述したStackをデプロイします。デプロイを2回に分ける必要があり、まずコンストラクトの`class Authentication`と`class Authorization`をデプロイします。2回に分けてデプロイする理由は後述します。
+最初に、ユーザープールとIDプールのみを記述したStackをデプロイします。紹介する構成ではデプロイを2回に分ける必要があり、まずコンストラクトの`class Authentication`と`class Authorization`をデプロイします。2回に分けてデプロイする理由は後述します。
 
 ![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_3.png =600x)
 *以下のAuthStackをデプロイすると作成されるAWSリソース*
@@ -451,16 +452,11 @@ $ cdk deploy zenn-example-auth
 
 ### CognitoのグループやIAMロールを追加したStackのデプロイ
 
-次に、2回目のデプロイを実施し、CognitoのグループやIAMロールを作成します。2回に分けてデプロイするのは2つの理由があります。どちらもデプロイ時のリソースの有無によって起こるエラーを回避するためです。
+次に2回目のデプロイを実施し、CognitoのグループやIAMロールを作成します。2回に分けてデプロイするのは2つの理由があります。どちらもデプロイ時のリソースの有無によって起こるエラーを回避するためです。
 
 1つ目は、Cognitoのユーザープールが存在しないとアプリクライアントの作成ができないためです。これは依存関係を追加してあげれば解決しそうなのですが2つ目の理由はどうしても回避できないためこのままの状態にしています。
 
 2つ目は、IDプールのidである`idPoolId`が`class AuthorizationGroupAndRole`の引数に必要なのですが、IDプール作成後にしか取得できないためです。加えて、`class Authorization`の引数に`class AuthorizationGroupAndRole`の結果が必要という循環参照が発生しているため2回デプロイしています。
-
-このStackをデプロイすると以下の図のようになります。
-
-![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_2.png =600x)
-*（再掲）*
 
 
 ```diff typescript: lib/auth-stack.ts（2回目のデプロイ時）
@@ -533,11 +529,17 @@ export class AuthStack extends Stack {
 }
 ```
 
-上記のStackを以下のコマンドで2回目のデプロイします。このコマンドを実行することで完了です。
+上記のStackを以下のコマンドで2回目のデプロイします。
 
 ```shell
 $ cdk deploy zenn-example-auth
 ```
+
+このデプロイが完了すると以下の図のようになります。
+
+![](/images/nextjs_nextauthjs_cognito_5/nextjs_nextauthjs_cognito_5_2.png =600x)
+*（再掲）*
+
 
 
 ### 別のアプリを追加した場合のStackのデプロイ
