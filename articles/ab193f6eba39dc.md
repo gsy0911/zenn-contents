@@ -15,7 +15,7 @@ published: true
 https://zenn.dev/ttskch/books/a3800fc0912fbb/viewer/1
 というめっちゃ良いZenn Bookを見つけてしまいました。
 API Platformのバージョンもちょっと違うのと、Dockerも使っていなさそうなので、
-差別化できているということで・・・。
+差別化できているということで…。
 
 「Chapter 01 はじめに」は、API Platformの立ち位置なども書かれており、すごく有益です！
 :::
@@ -28,7 +28,7 @@ API Platformのバージョンもちょっと違うのと、Dockerも使って�
   - PHP: 8.2
     - Symfony: 6.3系
     - api-platform: 3.1
-  - mysql: 8.0
+  - MySQL: 8.0
 
 # コンテナ立ち上げからAPI実行まで
 
@@ -101,7 +101,6 @@ RUN mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 ```
 
 PHPのDockerfileを利用している、`docker-compose.yaml`ファイルです。
-特段変わったことはしていないかと思います。
 
 ```yaml: docker-compose.yaml
 version: "3.8"
@@ -178,11 +177,10 @@ $ symfony new . -no-git
 と
 `$ symfony new . --no-git`
 の2通りの方法がありますが、今回は後者を採用しています。
-（大きな差異は、パッケージのインストールがあるかないかだと思っています。）
+（大きな差異は、パッケージのインストールが有無だと思っています）。
 ::::
 
-必要なパッケージのインストールを行います。
-途中で聞かれる質問は`n`で大丈夫です。
+必要なパッケージをインストールします。途中で聞かれる質問は`n`で大丈夫です。
 
 ```shell
 $ composer require doctrine twig orm api
@@ -201,7 +199,7 @@ $ composer require symfony/maker-bundle maker ormfixtures --dev
 
 ## 設定の編集
 
-最初に環境変数ファイルのコピーを行います。
+最初に環境変数ファイルをコピーします。
 
 ```shell
 $ cp .env .env.local
@@ -214,7 +212,7 @@ $ cp .env .env.local
 + DATABASE_URL="mysql://root:secret@zenn-mysql-symfony:3306/zenn_example?serverVersion=8.0"
 ```
 
-## Entityの作成
+## エンティティの作成
 
 以下のコマンドを実行すると、実行可能コマンドの一覧が出てきます。
 今回はそのうちの`make:entity`コマンドを使います。
@@ -278,7 +276,7 @@ $ symfony console make:entity Book
 
 以下に自動作成されたエンティティを載せておきます。
 
-::::details 作成されたエンティティ
+::::details 作成されたエンティティ。
 
 
 ```php: src/Entity/Book
@@ -363,7 +361,7 @@ $ symfony console doctrine:migrations:migrate
  [OK] Successfully migrated to version : DoctrineMigrations\Version20230721135723
 ```
 
-mysqlのコンテナに入って確認してみます。
+MySQLのコンテナに入って確認してみます。
 
 ```shell
 # ローカルから実行
@@ -446,7 +444,6 @@ mysql> select * from book;
 # おわりに
 
 `Book`エンティティに対してCRUDのAPIを作成しました。
-ただ、これだけだとORMと合わせての利用なので、APIとしては少し扱いにくいです。
 これから`API Platform`の機能を利用してAPIを作成していきたいです。
 
 ::: message

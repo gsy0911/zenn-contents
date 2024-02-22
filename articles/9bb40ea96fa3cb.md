@@ -49,7 +49,7 @@ AWSが公式に、動的に様々なサイズの画像を作成・配信する�
 Route 53とACMを設定する必要があります。
 ドメインとACMは、以下の内容が設定されていれば大丈夫です。
 
-詳しくは[こちらの記事](https://zenn.dev/gsy0911/articles/da47b660b7dd2b7d1ae7)と同じ内容になるようにしてください。
+詳しくは[こちらの記事](https://zenn.dev/gsy0911/articles/da47b660b7dd2b7d1ae7)と同じ内容にしてください。
 
 また、本記事では説明しませんが、環境にCDKv2を利用する準備も必要です。
 
@@ -106,9 +106,8 @@ AWSの元記事のコードからはかなり修正を加えています。
 
 ### `decodeQuerystring = (requestQuerystring, decodedUriObj) -> [object, object]`
 
-ユーザーが付与した`w=1280&h=960`や`w=1280&h=960&quality=50&ext=webp&fit=inside`などの
-クエリストリングをバリデーションを掛けたり、存在しない値はデフォルト値を付与した
-以下のようなobjectに変換します。
+付与された`w=1280&h=960`や`w=1280&h=960&quality=50&ext=webp&fit=inside`などのクエリストリングにはバリデーションをします。
+また、存在しない値はデフォルト値を付与した以下のようなobjectに変換します。
 
 パラメータの意味としては、以下の通りです。
 
@@ -116,9 +115,9 @@ AWSの元記事のコードからはかなり修正を加えています。
 - quality：画像変換時の品質
 - targetExtension：画像変換時のフォーマット
 - fit：画像変換時の方法
-  - パラメータは`cover`, `contain`, `fill`, `inside`, `outside`がある
+  - パラメータは`cover, contain, fill, inside, outside`がある
   - 参考：[Node.js の画像変換モジュール sharp の使い方(リサイズ)](https://r17n.page/2019/08/15/nodejs-sharp-image-converter-how-to-resize/)
-- querystring：デフォルト値などを含んだクエリストリング。S3のパスとしても利用する
+- querystring：デフォルト値などを含んだクエリストリングで、S3のパスとしても利用する
 
 ```json
 {
@@ -154,7 +153,7 @@ VierwerRequestで変換された`/images/w=1280&h=960&quality=50&ext=webp&fit=in
 ```
 
 
-::::details utils.jsのコード全体
+::::details utils.jsのコード全体。
 
 ```javascript: infrastructure/lib/lambda/image_resize_node/utils.js
 'use strict';
@@ -341,13 +340,13 @@ module.exports = {
 
 
 `viewer_request.js`では、アクセスするURIを変更しています。
-例えば、`/images/some_file.jpg?w=1280&h=960`のURIへアクセスすると、
-`/images/w=1280&h=960&quality=50&ext=webp&fit=inside/some_file.jpg`というURIに変換し、
+例えば、`/images/some_file.jpg?w=1280&h=960`のURIへアクセスする場合を考えます。
+この場合は、`/images/w=1280&h=960&quality=50&ext=webp&fit=inside/some_file.jpg`というURIに変換して
 CloudFrontへリクエストを投げるようにします。
 
 変換されたURIには、アクセス時に付与した`w=1280&h=960`というパラメータ以外にも、
 `ext=webp`や`fit=inside`などのパラメータが付与されるようになっています。
-これらは、画像変換時のパラメータで`OriginResponse`で利用されます。
+これらは、画像変換時のパラメータで`OriginResponse`にて利用されます。
 
 `viewer_request.js`のコードは短く比較的わかりやすいのでそのまま全て載せます。
 
@@ -400,7 +399,7 @@ exports.handler = (event, context, callback) => {
 
 これによって、画像をリサイズしつつ画像を保存し結果を返すということができています。
 
-::::details origin_response.jsのコード全体
+::::details origin_response.jsのコード全体。
 
 ```javascript: infrastructure/lib/lambda/image_resize_node/origin_response.js
 'use strict';
@@ -508,7 +507,7 @@ exports.handler = (event, context, callback) => {
 
 ### デプロイに必要なパラメータの付与
 
-デプロイの前にパラメータの設定を行います。
+デプロイの前にパラメータの設定します。
 `infrastructure/lib/`に保存されている`paramsExample.ts`をコピーして`params.ts`を作成します。
 
 ```shell
@@ -586,7 +585,7 @@ $ cdk deploy zenn-cf-resize-cloudfront
 
 上記のコマンドで、`addDependency`でnodeの`Lambda@Edge`もデプロイされます。
 
-デプロイが完了したら、CloudFrontの画面に行き「オリジン」→「編集」を押下し、
+デプロイが完了したら、CloudFrontの画面に行き「オリジン」→「編集」を押下します。
 
 ![](https://storage.googleapis.com/zenn-user-upload/994a652fe2c3-20230626.png =600x)
 
@@ -618,13 +617,10 @@ $ cdk destroy
 
 # おわりに
 
-画像のリクエスト時にリサイズして保存して、配信する仕組みを紹介しました。
-色々と制約もあって完全に全てのケースを網羅できるわけではないですが、
-役に立つシーンはあるかと思います。
+画像のリクエスト時にリサイズして保存して、配信する仕組みを紹介しました。色々と制約もあって完全に全てのケースを網羅できるわけではないですが、誰かの役に立てれば幸いです。
 
-余談ですが、元々はnode版だけではなくPython版のLambda@Edgeも作成していました。
-ただ、PythonのPillowがJSのSharpに比べると使いづらかったので、Python版は削除しました。
-世の中に、JS版の同じような記事がたくさんある理由がなんとなくわかりました。
+余談ですが、元々はnode版だけではなくPython版のLambda@Edgeも作成していました。ただ、PythonのPillowがJSのSharpに比べると使いづらかったので、Python版は削除しました。
+世の中に、JS版の同じような記事をよく見かける理由がなんとなくわかりました。
 
 # 参考
 
