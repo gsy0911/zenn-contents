@@ -2,6 +2,9 @@
   "plugins": {},
   "filters": {},
   "rules": {
+    "@proofdict/proofdict": {
+        "dictURL": "https://gsy0911.github.io/proof-dictionary/"
+    },
     "preset-ja-spacing": {
       "ja-space-between-half-and-full-width": {
         "space": "never"
@@ -20,8 +23,9 @@
       },
       "sentence-length": {
         "max": 150
-      }
+      },
+      "ja-no-weak-phrase": false
     },
-    "spellcheck-tech-word": true
+    "spellcheck-tech-word": false
   }
 }
