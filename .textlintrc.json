@@ -2,8 +2,26 @@
   "plugins": {},
   "filters": {},
   "rules": {
-    "preset-ja-spacing": true,
-    "preset-ja-technical-writing": true,
+    "preset-ja-spacing": {
+      "ja-space-between-half-and-full-width": {
+        "space": "never"
+      }
+    },
+    "preset-ja-technical-writing": {
+      "ja-no-mixed-period": {
+        "allowPeriodMarks": [":::", "（前略）", "（中略）", "（後略）"]
+      },
+      "no-exclamation-question-mark": {
+         "allow": [
+          "![",
+           "！",
+           "？"
+         ]
+      },
+      "sentence-length": {
+        "max": 150
+      }
+    },
     "spellcheck-tech-word": true
   }
 }
