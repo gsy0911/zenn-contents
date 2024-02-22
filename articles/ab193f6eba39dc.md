@@ -276,7 +276,7 @@ $ symfony console make:entity Book
 
 以下に自動作成されたエンティティを載せておきます。
 
-::::details 作成されたエンティティ
+::::details 作成されたエンティティ。
 
 
 ```php: src/Entity/Book

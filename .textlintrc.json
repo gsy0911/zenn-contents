@@ -5,14 +5,18 @@
     "@proofdict/proofdict": {
         "dictURL": "https://gsy0911.github.io/proof-dictionary/"
     },
-    "preset-ja-spacing": {
-      "ja-space-between-half-and-full-width": {
-        "space": "never"
-      }
+    "prh": {
+      "rulePaths": ["rules.yml"]
     },
+    "preset-ja-spacing": false,
     "preset-ja-technical-writing": {
       "ja-no-mixed-period": {
-        "allowPeriodMarks": [":::", "（前略）", "（中略）", "（後略）"]
+        "allowPeriodMarks": [":", "略）"]
+      },
+      "max-comma": false,
+      "no-doubled-joshi": {
+         "strict": false,
+         "allow": ["か", "が"]
       },
       "no-exclamation-question-mark": {
          "allow": [
@@ -21,9 +25,7 @@
            "？"
          ]
       },
-      "sentence-length": {
-        "max": 150
-      },
+      "sentence-length": false,
       "ja-no-weak-phrase": false
     },
     "spellcheck-tech-word": false

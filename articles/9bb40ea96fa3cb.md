@@ -153,7 +153,7 @@ VierwerRequestで変換された`/images/w=1280&h=960&quality=50&ext=webp&fit=in
 ```
 
 
-::::details utils.jsのコード全体
+::::details utils.jsのコード全体。
 
 ```javascript: infrastructure/lib/lambda/image_resize_node/utils.js
 'use strict';
@@ -399,7 +399,7 @@ exports.handler = (event, context, callback) => {
 
 これによって、画像をリサイズしつつ画像を保存し結果を返すということができています。
 
-::::details origin_response.jsのコード全体
+::::details origin_response.jsのコード全体。
 
 ```javascript: infrastructure/lib/lambda/image_resize_node/origin_response.js
 'use strict';
