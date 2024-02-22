@@ -15,7 +15,7 @@ published: true
 https://zenn.dev/ttskch/books/a3800fc0912fbb/viewer/1
 というめっちゃ良いZenn Bookを見つけてしまいました。
 API Platformのバージョンもちょっと違うのと、Dockerも使っていなさそうなので、
-差別化できているということで・・・。
+差別化できているということで…。
 
 「Chapter 01 はじめに」は、API Platformの立ち位置なども書かれており、すごく有益です！
 :::
@@ -28,7 +28,7 @@ API Platformのバージョンもちょっと違うのと、Dockerも使って�
   - PHP: 8.2
     - Symfony: 6.3系
     - api-platform: 3.1
-  - mysql: 8.0
+  - MySQL: 8.0
 
 # コンテナ立ち上げからAPI実行まで
 
@@ -178,7 +178,7 @@ $ symfony new . -no-git
 と
 `$ symfony new . --no-git`
 の2通りの方法がありますが、今回は後者を採用しています。
-（大きな差異は、パッケージのインストールがあるかないかだと思っています。）
+（大きな差異は、パッケージのインストールがあるかないかだと思っています。）。
 ::::
 
 必要なパッケージのインストールを行います。
@@ -363,7 +363,7 @@ $ symfony console doctrine:migrations:migrate
  [OK] Successfully migrated to version : DoctrineMigrations\Version20230721135723
 ```
 
-mysqlのコンテナに入って確認してみます。
+MySQLのコンテナに入って確認してみます。
 
 ```shell
 # ローカルから実行
@@ -446,7 +446,7 @@ mysql> select * from book;
 # おわりに
 
 `Book`エンティティに対してCRUDのAPIを作成しました。
-ただ、これだけだとORMと合わせての利用なので、APIとしては少し扱いにくいです。
+ただ、これだけだとO/Rマッパと合わせての利用なので、APIとしては少し扱いにくいです。
 これから`API Platform`の機能を利用してAPIを作成していきたいです。
 
 ::: message

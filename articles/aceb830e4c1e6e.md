@@ -13,7 +13,7 @@ HostedUIやAmplifyUIは便利ですが、サービスのイメージに合わな
 
 UIフレームワークのMUIを使ってサインイン画面やパスワード変更画面などを実装していきます。
 画面は`MUI`で作られていますが、認証まわりの処理は単一のファイルとして切り出しています。
-そのため`React`や`Next.js`を利用する場合なら、ほぼほぼコピペで利用できるかと思います。
+そのため`React`や`Next.js`を利用する場合なら、ほぼほぼコピー&ペーストで利用できるかと思います。
 
 主に参考にしたのは以下の記事になっています。
 
@@ -42,7 +42,7 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 *サインイン画面*
 
 認証済みの場合は、認証後の画面を用意する想定です。
-（今回は認証済みの場合「サインイン後」という文字になるようにしてあります。）
+（今回は認証済みの場合「サインイン後」という文字になるようにしてあります）。
 
 ![](https://storage.googleapis.com/zenn-user-upload/51b333dfab41-20230225.png =600x)
 *サインイン後の状態*
@@ -63,7 +63,7 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 今回はサインアップ画面はなく、AWSコンソールのcognitoの画面でユーザーを作成した後に、
 この認証画面を利用してもらう想定になっています。
 そのため、どちらかというとプライベートなサービスの場合を想定しています。
-（サインアップ画面を作れば誰でも登録・利用開始できるサービスにも利用可能です。）
+（サインアップ画面を作れば誰でも登録・利用開始できるサービスにも利用可能です）。
 
 ## デプロイ環境
 
@@ -473,7 +473,7 @@ const useProvideAuth = (): UseAuth => {
 
 
 上の画面は以下のコードで実装されています。
-（ほとんどこの[参考記事](https://qiita.com/shunnami/items/98a341d2ac20775241ad)の内容がベースになっています。）
+（ほとんどこの[参考記事](https://qiita.com/shunnami/items/98a341d2ac20775241ad)の内容がベースになっています）。
 
 
 ```typescript jsx: AuthBasePage.tsx
@@ -706,7 +706,7 @@ export default Home
 *パスワード忘れ画面*
 
 `AuthBasePage.tsx`と`PasswordReset.form.tsx`を組み合わせた画面。
-（`/password-forget`に遷移後、メールアドレスを入力してボタンを押下すると遷移します。）
+（`/password-forget`に遷移後、メールアドレスを入力してボタンを押下すると遷移します）。
 
 ![](https://storage.googleapis.com/zenn-user-upload/ffb6b2886b5d-20230225.png =600x)
 *パスワード再設定画面*
