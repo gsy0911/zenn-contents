@@ -31,6 +31,7 @@
 | 【NextAuth.js】Next.jsのPages RouterをCloudFrontとAPI Gatewayで稼働させる    | [9bddce24f45a09](./articles/9bddce24f45a09.md)             | [LINK](https://zenn.dev/gsy0911/articles/9bddce24f45a09)       |
 | API Platformで更新処理をしてみる                                            | [8c1eaef195c857](./articles/8c1eaef195c857.md)             | [LINK](https://zenn.dev/gsy0911/articles/8c1eaef195c857)       |
 | 【Cognito】ユーザープールとIDプールをCDKで管理する                                   | [9cf1c53ffc1a8c](./articles/9cf1c53ffc1a8c.md)             | [LINK](https://zenn.dev/gsy0911/articles/9cf1c53ffc1a8c)       |
+| PlaywrightでのMantineの要素取得まとめ                                       | [ad3dcc025b8707](./articles/ad3dcc025b8707.md)             | [LINK](https://zenn.dev/gsy0911/articles/ad3dcc025b8707)       |
 
 # references
 
