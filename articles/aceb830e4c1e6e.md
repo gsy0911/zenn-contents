@@ -75,7 +75,10 @@ https://qiita.com/shunnami/items/98a341d2ac20775241ad
 
 # コード
 
-今回のコードは[このリポジトリ](https://github.com/gsy0911/zenn-cognito-frontend-auth)に載せてありますので適宜参考にしてください。
+今回のコード以下のリポジトリに載せてありますので適宜参考にしてください。
+
+https://github.com/gsy0911/zenn-cognito-frontend-auth
+
 これから簡単に内容を紹介していきます。
 
 ## ディレクトリ構成
