@@ -34,6 +34,7 @@
 | PlaywrightでのMantineの要素取得まとめ                                       | [ad3dcc025b8707](./articles/ad3dcc025b8707.md)             | [LINK](https://zenn.dev/gsy0911/articles/ad3dcc025b8707)       |
 | [AWS Summit Tokyo 2024]参加レポート                                     | [1fe07799fc1541](./articles/1fe07799fc1541.md)             | [LINK](https://zenn.dev/gsy0911/articles/1fe07799fc1541)       |
 | 【NextAuth.js/認証】Cognitoのサインアップの状態遷移をXStateで楽に管理する                 | [6589c490671ed3](./articles/6589c490671ed3.md)             | [LINK](https://zenn.dev/gsy0911/articles/6589c490671ed3)       |
+| ReportLabでSeabornのグラフをSVGで埋め込む                                    | [3d96b6d651104b](./articles/3d96b6d651104b.md)             | [LINK](https://zenn.dev/gsy0911/articles/3d96b6d651104b)       |
 
 # references
 
