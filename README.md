@@ -39,7 +39,8 @@
 | Docker Engine stoppedってなった時の対処法                                   | [4fcfc44b1af0dd](./articles/4fcfc44b1af0dd.md)             | [LINK](https://zenn.dev/gsy0911/articles/4fcfc44b1af0dd)       |
 | ECS Exec Commandの標準出力をPythonで取得する                                 | [4ad4733b1ffd9b](./articles/4ad4733b1ffd9b.md)             | [LINK](https://zenn.dev/gsy0911/articles/4ad4733b1ffd9b)       |
 | WezTermのタブに作業ディレクトリを表示させる                                         | [73747712233191](./articles/73747712233191.md)             | [LINK](https://zenn.dev/gsy0911/articles/73747712233191)       |
-| Neovimはじめてみた                                                      | [1b4344e41b9d5b](./articles/1b4344e41b9d5b.md)             | [LINK](https://zenn.dev/gsy0911/articles/1b4344e41b9d5b)       |
+| Neovimはじめてみた                                                      | [1b4344e41b9d5b](./articles/1b4344e41b9d5b.md)             | [LINK](https://zenn.dev/vim_jp/articles/1b4344e41b9d5b)       |
+| WezTermのタブにアイコンをつける                                                      | [a7347e1a2d8d31](./articles/a7347e1a2d8d31.md)             | [LINK](https://zenn.dev/gsy0911/articles/a7347e1a2d8d31.md)       |
 
 # references
 
