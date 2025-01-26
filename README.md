@@ -41,6 +41,7 @@
 | WezTermのタブに作業ディレクトリを表示させる                                         | [73747712233191](./articles/73747712233191.md)             | [LINK](https://zenn.dev/gsy0911/articles/73747712233191)       |
 | Neovimはじめてみた                                                      | [1b4344e41b9d5b](./articles/1b4344e41b9d5b.md)             | [LINK](https://zenn.dev/vim_jp/articles/1b4344e41b9d5b)       |
 | WezTermのタブにアイコンをつける                                                      | [a7347e1a2d8d31](./articles/a7347e1a2d8d31.md)             | [LINK](https://zenn.dev/gsy0911/articles/a7347e1a2d8d31.md)       |
+| neovimを使って4ヶ月                                                      | [c009044a4f7026](./articles/c009044a4f7026.md)             | [LINK](https://zenn.dev/gsy0911/articles/c009044a4f7026.md)       |
 
 # references
 
