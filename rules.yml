@@ -1,6 +1,0 @@
-version: 1
-
-rules:
-  - expected: Next.js
-    pattern:
-      - next.js
