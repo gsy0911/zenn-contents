@@ -18,13 +18,8 @@
   },
   "homepage": "https://github.com/gsy0911/zenn-contents#readme",
   "dependencies": {
-    "zenn-cli": "^0.4.4"
+    "zenn-cli": "^0.4.7"
   },
   "devDependencies": {
-    "@proofdict/textlint-rule-proofdict": "^3.1.2",
-    "textlint": "^15.5.1",
-    "textlint-rule-preset-ja-spacing": "^2.4.3",
-    "textlint-rule-preset-ja-technical-writing": "^11.0.0",
-    "textlint-rule-spellcheck-tech-word": "^5.0.0"
   }
 }
